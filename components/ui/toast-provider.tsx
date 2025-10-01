@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, PropsWithChildren, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
 
@@ -40,12 +47,15 @@ export function ToastProvider({ children }: PropsWithChildren) {
     setToasts((current) => current.filter((item) => item.id !== id));
   }, []);
 
-  const value = useMemo(() => ({ toasts, pushToast, dismissToast }), [toasts, pushToast, dismissToast]);
+  const value = useMemo(
+    () => ({ toasts, pushToast, dismissToast }),
+    [toasts, pushToast, dismissToast]
+  );
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4">
+      <div className="pointer-events-none fixed bottom-20 right-4 z-50 flex flex-col items-end gap-2">
         {toasts.map((toast) => (
           <Transition
             key={toast.id}
@@ -62,15 +72,21 @@ export function ToastProvider({ children }: PropsWithChildren) {
               className={clsx(
                 "pointer-events-auto w-full max-w-sm rounded-lg border bg-white p-4 shadow-lg",
                 "dark:border-slate-700 dark:bg-slate-800",
-                toast.level === "success" && "border-green-200 bg-green-50 dark:border-green-600 dark:bg-green-900/40",
-                toast.level === "error" && "border-red-200 bg-red-50 dark:border-red-600 dark:bg-red-900/40"
+                toast.level === "success" &&
+                  "border-green-200 bg-green-50 dark:border-green-600 dark:bg-green-900/40",
+                toast.level === "error" &&
+                  "border-red-200 bg-red-50 dark:border-red-600 dark:bg-red-900/40"
               )}
             >
               <div className="flex items-start gap-3">
                 <div className="flex-1 text-sm">
-                  <p className="font-semibold text-slate-900 dark:text-slate-50">{toast.title}</p>
+                  <p className="font-semibold text-slate-900 dark:text-slate-50">
+                    {toast.title}
+                  </p>
                   {toast.description ? (
-                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{toast.description}</p>
+                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                      {toast.description}
+                    </p>
                   ) : null}
                 </div>
                 <button
