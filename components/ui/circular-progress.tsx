@@ -21,19 +21,19 @@ export function CircularProgress({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     const updateDimensions = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
         setDimensions({ width, height });
       }
     };
-    
+
     updateDimensions();
-    
+
     const resizeObserver = new ResizeObserver(updateDimensions);
     resizeObserver.observe(containerRef.current);
-    
+
     return () => resizeObserver.disconnect();
   }, []);
 
@@ -63,24 +63,24 @@ export function CircularProgress({
 
   const strokeWidth = 3;
   const radius = 12; // border radius in pixels (matches rounded-xl)
-  
+
   // Create a rounded rectangle path that starts from top center
-  // The path traces clockwise around the button perimeter
+  // The path traces counter-clockwise around the button perimeter for clockwise countdown
   const createRoundedRectPath = (width: number, height: number, r: number) => {
     const offset = strokeWidth / 2;
     const w = width - strokeWidth;
     const h = height - strokeWidth;
-    
+
     return `
       M ${width / 2} ${offset}
-      L ${w - r + offset} ${offset}
-      Q ${w + offset} ${offset} ${w + offset} ${r + offset}
-      L ${w + offset} ${h - r + offset}
-      Q ${w + offset} ${h + offset} ${w - r + offset} ${h + offset}
-      L ${r + offset} ${h + offset}
-      Q ${offset} ${h + offset} ${offset} ${h - r + offset}
-      L ${offset} ${r + offset}
-      Q ${offset} ${offset} ${r + offset} ${offset}
+      L ${r + offset} ${offset}
+      Q ${offset} ${offset} ${offset} ${r + offset}
+      L ${offset} ${h - r + offset}
+      Q ${offset} ${h + offset} ${r + offset} ${h + offset}
+      L ${w - r + offset} ${h + offset}
+      Q ${w + offset} ${h + offset} ${w + offset} ${h - r + offset}
+      L ${w + offset} ${r + offset}
+      Q ${w + offset} ${offset} ${w - r + offset} ${offset}
       L ${width / 2} ${offset}
     `.trim();
   };
@@ -89,7 +89,7 @@ export function CircularProgress({
     <div className="relative" ref={containerRef}>
       {isActive && (
         <svg
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none animate-in fade-in duration-200"
           style={{
             width: "100%",
             height: "100%",
@@ -98,13 +98,17 @@ export function CircularProgress({
           preserveAspectRatio="xMidYMid slice"
         >
           <path
-            d={createRoundedRectPath(dimensions.width, dimensions.height, radius)}
+            d={createRoundedRectPath(
+              dimensions.width,
+              dimensions.height,
+              radius
+            )}
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
             className="text-brand-500 dark:text-brand-400"
             strokeDasharray="1"
-            strokeDashoffset={1 - progress / 100}
+            strokeDashoffset={progress / 100}
             pathLength="1"
             strokeLinecap="round"
             style={{
