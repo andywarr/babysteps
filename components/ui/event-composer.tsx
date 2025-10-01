@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
+import { X } from "lucide-react";
 
 import { useEvents } from "@/components/ui/events-provider";
 import type { EventType } from "@/lib/types/events";
@@ -10,13 +11,13 @@ const feedingMethods = [
   { value: "breast", label: "Breast" },
   { value: "bottle", label: "Bottle" },
   { value: "formula", label: "Formula" },
-  { value: "solid", label: "Solid" }
+  { value: "solid", label: "Solid" },
 ] as const;
 
 const diaperTypes = [
   { value: "wet", label: "Wet" },
   { value: "dirty", label: "Dirty" },
-  { value: "mixed", label: "Mixed" }
+  { value: "mixed", label: "Mixed" },
 ] as const;
 
 type EventComposerProps = {
@@ -25,26 +26,43 @@ type EventComposerProps = {
 };
 
 export function EventComposer({ activeType, onClose }: EventComposerProps) {
-  const [timestamp, setTimestamp] = useState(() => new Date().toISOString().slice(0, 16));
+  const [timestamp, setTimestamp] = useState(() =>
+    new Date().toISOString().slice(0, 16)
+  );
   const [note, setNote] = useState("");
-  const [feedFields, setFeedFields] = useState({ method: "breast", side: "left", durationMinutes: 0, amountOz: 0 });
+  const [feedFields, setFeedFields] = useState({
+    method: "breast",
+    side: "left",
+    durationMinutes: 0,
+    amountOz: 0,
+  });
   const [diaperField, setDiaperField] = useState("wet");
   const [sleepDuration, setSleepDuration] = useState(30);
-  const [pumpFields, setPumpFields] = useState({ durationMinutes: 20, amountOz: 4 });
+  const [pumpFields, setPumpFields] = useState({
+    durationMinutes: 20,
+    amountOz: 4,
+  });
   const [medFields, setMedFields] = useState({ medication: "", dose: "" });
   const [noteTitle, setNoteTitle] = useState("");
+  const [miscDescription, setMiscDescription] = useState("");
   const { logEvent, startTimer } = useEvents();
 
   useEffect(() => {
     if (!activeType) return;
     setTimestamp(new Date().toISOString().slice(0, 16));
     setNote("");
-    setFeedFields({ method: "breast", side: "left", durationMinutes: 0, amountOz: 0 });
+    setFeedFields({
+      method: "breast",
+      side: "left",
+      durationMinutes: 0,
+      amountOz: 0,
+    });
     setDiaperField("wet");
     setSleepDuration(30);
     setPumpFields({ durationMinutes: 20, amountOz: 4 });
     setMedFields({ medication: "", dose: "" });
     setNoteTitle("");
+    setMiscDescription("");
   }, [activeType]);
 
   const heading = useMemo(() => {
@@ -61,6 +79,8 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
         return "Log medication";
       case "note":
         return "Add note";
+      case "misc":
+        return "Log event";
       default:
         return null;
     }
@@ -82,7 +102,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           method: feedFields.method as any,
           side: feedFields.side as any,
           durationMinutes: feedFields.durationMinutes || undefined,
-          amountOz: feedFields.amountOz || undefined
+          amountOz: feedFields.amountOz || undefined,
         });
         break;
       case "diaper":
@@ -90,7 +110,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           type: "diaper",
           timestamp: isoTimestamp,
           note,
-          diaperType: diaperField as any
+          diaperType: diaperField as any,
         });
         break;
       case "sleep":
@@ -98,7 +118,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           type: "sleep",
           timestamp: isoTimestamp,
           note,
-          durationMinutes: sleepDuration
+          durationMinutes: sleepDuration,
         } as any);
         break;
       case "pump":
@@ -107,7 +127,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           timestamp: isoTimestamp,
           note,
           durationMinutes: pumpFields.durationMinutes,
-          amountOz: pumpFields.amountOz
+          amountOz: pumpFields.amountOz,
         } as any);
         break;
       case "med":
@@ -116,7 +136,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           timestamp: isoTimestamp,
           note,
           medication: medFields.medication,
-          dose: medFields.dose
+          dose: medFields.dose,
         } as any);
         break;
       case "note":
@@ -124,7 +144,13 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           type: "note",
           timestamp: isoTimestamp,
           note,
-          title: noteTitle
+          title: noteTitle,
+        } as any);
+        break;
+      case "misc":
+        await logEvent({
+          type: "misc",
+          description: miscDescription,
         } as any);
         break;
     }
@@ -136,7 +162,10 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
     if (activeType === "sleep") {
       await startTimer("sleep", { plannedDuration: sleepDuration, note });
     } else if (activeType === "feed") {
-      await startTimer("feed", { method: feedFields.method, side: feedFields.side });
+      await startTimer("feed", {
+        method: feedFields.method,
+        side: feedFields.side,
+      });
     } else {
       await startTimer("feed");
     }
@@ -151,25 +180,36 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">{heading}</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Timestamp defaults to now. Adjust if you forgot to log in the moment.
-            </p>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+              {heading}
+            </h2>
+            {activeType !== "misc" && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Timestamp defaults to now. Adjust if you forgot to log in the
+                moment.
+              </p>
+            )}
           </div>
-          <button type="button" className="text-sm font-medium text-slate-500 hover:text-slate-700" onClick={onClose}>
-            Close
+          <button
+            type="button"
+            className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <label className="mt-6 block text-sm font-medium text-slate-700 dark:text-slate-200">
-          Logged at
-          <input
-            type="datetime-local"
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            value={timestamp}
-            onChange={(event) => setTimestamp(event.target.value)}
-          />
-        </label>
+        {activeType !== "misc" && (
+          <label className="mt-6 block text-sm font-medium text-slate-700 dark:text-slate-200">
+            Logged at
+            <input
+              type="datetime-local"
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              value={timestamp}
+              onChange={(event) => setTimestamp(event.target.value)}
+            />
+          </label>
+        )}
 
         {activeType === "feed" ? (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -178,7 +218,12 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
               <select
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={feedFields.method}
-                onChange={(event) => setFeedFields((current) => ({ ...current, method: event.target.value }))}
+                onChange={(event) =>
+                  setFeedFields((current) => ({
+                    ...current,
+                    method: event.target.value,
+                  }))
+                }
               >
                 {feedingMethods.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -192,7 +237,12 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
               <select
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={feedFields.side}
-                onChange={(event) => setFeedFields((current) => ({ ...current, side: event.target.value }))}
+                onChange={(event) =>
+                  setFeedFields((current) => ({
+                    ...current,
+                    side: event.target.value,
+                  }))
+                }
               >
                 <option value="left">Left</option>
                 <option value="right">Right</option>
@@ -206,7 +256,12 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
                 min={0}
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={feedFields.durationMinutes}
-                onChange={(event) => setFeedFields((current) => ({ ...current, durationMinutes: Number(event.target.value) }))}
+                onChange={(event) =>
+                  setFeedFields((current) => ({
+                    ...current,
+                    durationMinutes: Number(event.target.value),
+                  }))
+                }
               />
             </label>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -217,7 +272,12 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
                 step="0.5"
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={feedFields.amountOz}
-                onChange={(event) => setFeedFields((current) => ({ ...current, amountOz: Number(event.target.value) }))}
+                onChange={(event) =>
+                  setFeedFields((current) => ({
+                    ...current,
+                    amountOz: Number(event.target.value),
+                  }))
+                }
               />
             </label>
           </div>
@@ -263,7 +323,10 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={pumpFields.durationMinutes}
                 onChange={(event) =>
-                  setPumpFields((current) => ({ ...current, durationMinutes: Number(event.target.value) }))
+                  setPumpFields((current) => ({
+                    ...current,
+                    durationMinutes: Number(event.target.value),
+                  }))
                 }
               />
             </label>
@@ -275,7 +338,12 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
                 step="0.5"
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={pumpFields.amountOz}
-                onChange={(event) => setPumpFields((current) => ({ ...current, amountOz: Number(event.target.value) }))}
+                onChange={(event) =>
+                  setPumpFields((current) => ({
+                    ...current,
+                    amountOz: Number(event.target.value),
+                  }))
+                }
               />
             </label>
           </div>
@@ -288,7 +356,12 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
               <input
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={medFields.medication}
-                onChange={(event) => setMedFields((current) => ({ ...current, medication: event.target.value }))}
+                onChange={(event) =>
+                  setMedFields((current) => ({
+                    ...current,
+                    medication: event.target.value,
+                  }))
+                }
               />
             </label>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -296,7 +369,12 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
               <input
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={medFields.dose}
-                onChange={(event) => setMedFields((current) => ({ ...current, dose: event.target.value }))}
+                onChange={(event) =>
+                  setMedFields((current) => ({
+                    ...current,
+                    dose: event.target.value,
+                  }))
+                }
               />
             </label>
           </div>
@@ -313,15 +391,31 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           </label>
         ) : null}
 
-        <label className="mt-4 block text-sm font-medium text-slate-700 dark:text-slate-200">
-          Notes
-          <textarea
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            rows={3}
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-          />
-        </label>
+        {activeType === "misc" ? (
+          <label className="mt-6 block text-sm font-medium text-slate-700 dark:text-slate-200">
+            What happened?
+            <input
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              value={miscDescription}
+              onChange={(event) => setMiscDescription(event.target.value)}
+              placeholder="e.g., Temperature check, Bath time, Doctor visit"
+              required
+              autoFocus
+            />
+          </label>
+        ) : null}
+
+        {activeType !== "misc" && (
+          <label className="mt-4 block text-sm font-medium text-slate-700 dark:text-slate-200">
+            Notes
+            <textarea
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              rows={3}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </label>
+        )}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {(activeType === "feed" || activeType === "sleep") && (

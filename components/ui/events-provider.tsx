@@ -25,6 +25,7 @@ import type {
 } from "@/lib/types/events";
 
 import { useToast } from "./toast-provider";
+import { EventComposer } from "./event-composer";
 
 dayjs.extend(utc);
 dayjs.extend(localizedFormat);
@@ -52,6 +53,7 @@ type EventsContextValue = {
     email: string;
     role: "admin" | "member" | "viewer";
   }) => Promise<void>;
+  openComposer: (type: EventType) => void;
 };
 
 const defaultBaby: BabyProfile = {
@@ -76,6 +78,7 @@ export function EventsProvider({ children }: PropsWithChildren) {
       return defaultBaby;
     }
   });
+  const [composerType, setComposerType] = useState<EventType | null>(null);
   const { pushToast } = useToast();
 
   useEffect(() => {
@@ -120,18 +123,17 @@ export function EventsProvider({ children }: PropsWithChildren) {
     async (input) => {
       const timestamp = input.timestamp ?? new Date().toISOString();
       const now = new Date().toISOString();
-      const event: BabyEvent = {
+      const event = {
+        ...(input as BabyEvent),
         id: crypto.randomUUID(),
         babyId: baby.id,
         caregiverId: "local-user",
         createdAt: now,
         updatedAt: now,
         source: "local",
-        note: input.note,
-        ...(input as BabyEvent),
         timestamp,
         type: input.type,
-      };
+      } as BabyEvent;
       await db.events.put(event);
       await db.outbox.put({
         id: crypto.randomUUID(),
@@ -242,6 +244,14 @@ export function EventsProvider({ children }: PropsWithChildren) {
     [pushToast]
   );
 
+  const openComposer = useCallback((type: EventType) => {
+    setComposerType(type);
+  }, []);
+
+  const closeComposer = useCallback(() => {
+    setComposerType(null);
+  }, []);
+
   const value = useMemo<EventsContextValue>(
     () => ({
       baby,
@@ -255,6 +265,7 @@ export function EventsProvider({ children }: PropsWithChildren) {
       cancelTimer,
       updateBabyProfile,
       inviteCaregiver,
+      openComposer,
     }),
     [
       baby,
@@ -268,11 +279,15 @@ export function EventsProvider({ children }: PropsWithChildren) {
       cancelTimer,
       updateBabyProfile,
       inviteCaregiver,
+      openComposer,
     ]
   );
 
   return (
-    <EventsContext.Provider value={value}>{children}</EventsContext.Provider>
+    <EventsContext.Provider value={value}>
+      {children}
+      <EventComposer activeType={composerType} onClose={closeComposer} />
+    </EventsContext.Provider>
   );
 }
 
@@ -300,6 +315,8 @@ function formatEventType(input: BabyEvent | EventType | TimerType): string {
         return "Medication";
       case "note":
         return "Note";
+      case "misc":
+        return "Misc";
       default:
         return input;
     }
@@ -323,6 +340,8 @@ function formatEventType(input: BabyEvent | EventType | TimerType): string {
       return "Medication";
     case "note":
       return "Note";
+    case "misc":
+      return "Misc";
     default:
       return input.type;
   }

@@ -1,4 +1,11 @@
-export type EventType = "feed" | "diaper" | "sleep" | "pump" | "med" | "note";
+export type EventType =
+  | "feed"
+  | "diaper"
+  | "sleep"
+  | "pump"
+  | "med"
+  | "note"
+  | "misc";
 
 export type FeedingMethod = "breast" | "bottle" | "formula" | "solid";
 export type DiaperType = "wet" | "dirty" | "mixed";
@@ -50,7 +57,19 @@ export interface NoteEvent extends BaseEvent {
   title?: string;
 }
 
-export type BabyEvent = FeedEvent | DiaperEvent | SleepEvent | PumpEvent | MedEvent | NoteEvent;
+export interface MiscEvent extends BaseEvent {
+  type: "misc";
+  description: string;
+}
+
+export type BabyEvent =
+  | FeedEvent
+  | DiaperEvent
+  | SleepEvent
+  | PumpEvent
+  | MedEvent
+  | NoteEvent
+  | MiscEvent;
 
 export type TimerType = "feed" | "sleep";
 

@@ -15,6 +15,7 @@ const filters: { value: EventType | "all"; label: string }[] = [
   { value: "pump", label: "Pumps" },
   { value: "med", label: "Meds" },
   { value: "note", label: "Notes" },
+  { value: "misc", label: "Misc" },
 ];
 
 export default function HistoryPage() {
@@ -190,6 +191,8 @@ function formatEventLabel(event: BabyEvent) {
       return `${event.medication} (${event.dose})`;
     case "note":
       return event.title ?? "Note";
+    case "misc":
+      return event.description || "Misc event";
     default:
       return event.type;
   }

@@ -24,7 +24,15 @@ type VolumeTracker = {
 const VOLUME_TRACKING_DURATION = 10000; // 10 seconds
 
 export default function HomePage() {
-  const { events, baby, logEvent, timers, stopTimer, startTimer } = useEvents();
+  const {
+    events,
+    baby,
+    logEvent,
+    timers,
+    stopTimer,
+    startTimer,
+    openComposer,
+  } = useEvents();
   const [volumeTracker, setVolumeTracker] = useState<VolumeTracker | null>(
     null
   );
@@ -103,7 +111,13 @@ export default function HomePage() {
   );
 
   const handleQuickAction = useCallback(
-    async (action: QuickActionType) => {
+    async (action: QuickActionType | "misc") => {
+      // Handle misc event (opens composer)
+      if (action === "misc") {
+        openComposer("misc");
+        return;
+      }
+
       const now = Date.now();
 
       // Handle volume-tracked actions (bottle, food, nursing, pumping)
@@ -190,11 +204,18 @@ export default function HomePage() {
         return;
       }
     },
-    [logEvent, sleepTimer, stopTimer, startTimer, finalizeVolumeTracking]
+    [
+      logEvent,
+      sleepTimer,
+      stopTimer,
+      startTimer,
+      finalizeVolumeTracking,
+      openComposer,
+    ]
   );
 
   const quickActions: {
-    type: QuickActionType;
+    type: QuickActionType | "misc";
     label: string;
     emoji: string;
   }[] = [
@@ -205,6 +226,7 @@ export default function HomePage() {
     { type: "sleep", label: sleepTimer ? "End Sleep" : "Sleep", emoji: "😴" },
     { type: "nursing", label: "Nursing", emoji: "🤱" },
     { type: "pumping", label: "Pumping", emoji: "🫙" },
+    { type: "misc", label: "Misc", emoji: "📝" },
   ];
 
   return (
@@ -260,7 +282,9 @@ export default function HomePage() {
                     </span>
                   )}
                 </div>
-                {lastEventByAction[action.type] && !isActive ? (
+                {action.type !== "misc" &&
+                lastEventByAction[action.type] &&
+                !isActive ? (
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                     Last:{" "}
                     {new Date(
