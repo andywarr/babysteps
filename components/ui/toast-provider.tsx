@@ -36,11 +36,9 @@ export function ToastProvider({ children }: PropsWithChildren) {
   const pushToast = useCallback((toast: Omit<Toast, "id">) => {
     const id = crypto.randomUUID();
     setToasts((current) => [...current, { id, level: "info", ...toast }]);
-    if (!toast.onAction) {
-      setTimeout(() => {
-        setToasts((current) => current.filter((item) => item.id !== id));
-      }, 3500);
-    }
+    setTimeout(() => {
+      setToasts((current) => current.filter((item) => item.id !== id));
+    }, 10000);
   }, []);
 
   const dismissToast = useCallback((id: string) => {
