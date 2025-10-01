@@ -1,0 +1,8 @@
+{
+  "name": "Babysteps",
+  "short_name": "Babysteps",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4d71ff"
+}
