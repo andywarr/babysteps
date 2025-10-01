@@ -19,8 +19,8 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en" className="h-full bg-slate-50">
       <body className={`${inter.className} min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100`}>
-        <EventsProvider>
-          <ToastProvider>
+        <ToastProvider>
+          <EventsProvider>
             <div className="flex min-h-screen flex-col">
               <header className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
                 <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4">
@@ -45,8 +45,8 @@ export default function RootLayout({ children }: PropsWithChildren) {
                 Built for sleepy caregivers with ❤️
               </footer>
             </div>
-          </ToastProvider>
-        </EventsProvider>
+          </EventsProvider>
+        </ToastProvider>
       </body>
     </html>
   );
