@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
+import { X } from "lucide-react";
 
 type ToastLevel = "info" | "success" | "error";
 
@@ -88,10 +89,11 @@ export function ToastProvider({ children }: PropsWithChildren) {
                   ) : null}
                 </div>
                 <button
-                  className="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-200"
+                  className="text-brand-600 hover:text-brand-700 dark:text-brand-200"
                   onClick={() => dismissToast(toast.id)}
+                  aria-label="Close"
                 >
-                  Close
+                  <X className="h-4 w-4" />
                 </button>
               </div>
               {toast.onAction ? (
