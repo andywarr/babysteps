@@ -1,67 +1,282 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEvents } from "@/components/ui/events-provider";
-import { EventType } from "@/lib/types/events";
 import { QuickStats } from "@/components/ui/quick-stats";
 import { ActiveTimerList } from "@/components/ui/timer-list";
-import { EventComposer } from "@/components/ui/event-composer";
 
-const eventTypes: { type: EventType; label: string; description: string }[] = [
-  { type: "feed", label: "Log Feed", description: "Track nursing, bottles, or formula" },
-  { type: "diaper", label: "Log Diaper", description: "Wet, dirty, or mixed" },
-  { type: "sleep", label: "Log Sleep", description: "Track naps and overnight sleep" },
-  { type: "pump", label: "Log Pump", description: "Record pumping sessions" },
-  { type: "med", label: "Log Med", description: "Track meds and supplements" },
-  { type: "note", label: "Add Note", description: "Capture milestones or reminders" }
-];
+type QuickActionType =
+  | "bottle"
+  | "food"
+  | "wet"
+  | "dirty"
+  | "sleep"
+  | "nursing"
+  | "pumping";
+
+type VolumeTracker = {
+  type: QuickActionType;
+  amountOz: number;
+  startTime: number;
+  timeoutId: NodeJS.Timeout;
+};
+
+const VOLUME_TRACKING_DURATION = 10000; // 10 seconds
 
 export default function HomePage() {
-  const { events, baby } = useEvents();
-  const [activeType, setActiveType] = useState<EventType | null>(null);
+  const { events, baby, logEvent, timers, stopTimer, startTimer } = useEvents();
+  const [volumeTracker, setVolumeTracker] = useState<VolumeTracker | null>(
+    null
+  );
+  const volumeTrackerRef = useRef<VolumeTracker | null>(null);
 
-  const lastEventByType = useMemo(() => {
-    const result: Partial<Record<EventType, string>> = {};
+  // Sync ref with state
+  useEffect(() => {
+    volumeTrackerRef.current = volumeTracker;
+  }, [volumeTracker]);
+
+  const sleepTimer = useMemo(() => {
+    return timers.find((t) => t.type === "sleep");
+  }, [timers]);
+
+  const lastEventByAction = useMemo(() => {
+    const result: Partial<Record<QuickActionType, string>> = {};
     for (const event of events) {
-      if (!result[event.type]) {
-        result[event.type] = event.timestamp;
+      if (event.type === "feed") {
+        const feedEvent = event as any;
+        if (feedEvent.method === "bottle" && !result.bottle) {
+          result.bottle = event.timestamp;
+        } else if (feedEvent.method === "solid" && !result.food) {
+          result.food = event.timestamp;
+        } else if (feedEvent.method === "breast" && !result.nursing) {
+          result.nursing = event.timestamp;
+        }
+      } else if (event.type === "diaper") {
+        const diaperEvent = event as any;
+        if (diaperEvent.diaperType === "wet" && !result.wet) {
+          result.wet = event.timestamp;
+        } else if (diaperEvent.diaperType === "dirty" && !result.dirty) {
+          result.dirty = event.timestamp;
+        }
+      } else if (event.type === "sleep" && !result.sleep) {
+        result.sleep = event.timestamp;
+      } else if (event.type === "pump" && !result.pumping) {
+        result.pumping = event.timestamp;
       }
     }
     return result;
   }, [events]);
+
+  const finalizeVolumeTracking = useCallback(
+    async (tracker: VolumeTracker) => {
+      clearTimeout(tracker.timeoutId);
+
+      // Log the event with accumulated volume
+      if (tracker.type === "bottle") {
+        await logEvent({
+          type: "feed",
+          method: "bottle",
+          amountOz: tracker.amountOz,
+        });
+      } else if (tracker.type === "food") {
+        await logEvent({
+          type: "feed",
+          method: "solid",
+          amountOz: tracker.amountOz,
+        });
+      } else if (tracker.type === "nursing") {
+        await logEvent({
+          type: "feed",
+          method: "breast",
+          amountOz: tracker.amountOz,
+        });
+      } else if (tracker.type === "pumping") {
+        await logEvent({
+          type: "pump",
+          amountOz: tracker.amountOz,
+        });
+      }
+
+      setVolumeTracker(null);
+    },
+    [logEvent]
+  );
+
+  const handleQuickAction = useCallback(
+    async (action: QuickActionType) => {
+      const now = Date.now();
+
+      // Handle volume-tracked actions (bottle, food, nursing, pumping)
+      if (
+        action === "bottle" ||
+        action === "food" ||
+        action === "nursing" ||
+        action === "pumping"
+      ) {
+        const currentTracker = volumeTrackerRef.current;
+
+        // If there's an active tracker for the same action type
+        if (currentTracker && currentTracker.type === action) {
+          const timeSinceStart = now - currentTracker.startTime;
+
+          if (timeSinceStart < VOLUME_TRACKING_DURATION) {
+            // Increment volume and reset timeout
+            clearTimeout(currentTracker.timeoutId);
+            const newAmount = currentTracker.amountOz + 1;
+            const timeoutId = setTimeout(() => {
+              if (volumeTrackerRef.current) {
+                finalizeVolumeTracking(volumeTrackerRef.current);
+              }
+            }, VOLUME_TRACKING_DURATION);
+
+            setVolumeTracker({
+              type: action,
+              amountOz: newAmount,
+              startTime: currentTracker.startTime,
+              timeoutId,
+            });
+            return;
+          } else {
+            // Time expired, finalize old tracker and start new one
+            await finalizeVolumeTracking(currentTracker);
+          }
+        } else if (currentTracker) {
+          // Different action type, finalize old tracker first
+          await finalizeVolumeTracking(currentTracker);
+        }
+
+        // Start new volume tracking
+        const timeoutId = setTimeout(() => {
+          if (volumeTrackerRef.current) {
+            finalizeVolumeTracking(volumeTrackerRef.current);
+          }
+        }, VOLUME_TRACKING_DURATION);
+
+        setVolumeTracker({
+          type: action,
+          amountOz: 1,
+          startTime: now,
+          timeoutId,
+        });
+        return;
+      }
+
+      // Handle diaper actions (immediate logging)
+      if (action === "wet") {
+        await logEvent({
+          type: "diaper",
+          diaperType: "wet",
+        });
+        return;
+      }
+
+      if (action === "dirty") {
+        await logEvent({
+          type: "diaper",
+          diaperType: "dirty",
+        });
+        return;
+      }
+
+      // Handle sleep (toggle timer)
+      if (action === "sleep") {
+        if (sleepTimer) {
+          // Stop the timer
+          await stopTimer(sleepTimer.id);
+        } else {
+          // Start the timer
+          await startTimer("sleep");
+        }
+        return;
+      }
+    },
+    [logEvent, sleepTimer, stopTimer, startTimer, finalizeVolumeTracking]
+  );
+
+  const quickActions: {
+    type: QuickActionType;
+    label: string;
+    emoji: string;
+  }[] = [
+    { type: "bottle", label: "Bottle", emoji: "🍼" },
+    { type: "food", label: "Food", emoji: "🥄" },
+    { type: "wet", label: "Wet Diaper", emoji: "💧" },
+    { type: "dirty", label: "Dirty Diaper", emoji: "💩" },
+    { type: "sleep", label: sleepTimer ? "End Sleep" : "Sleep", emoji: "😴" },
+    { type: "nursing", label: "Nursing", emoji: "🤱" },
+    { type: "pumping", label: "Pumping", emoji: "🫙" },
+  ];
 
   return (
     <div className="space-y-8">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Hello, {baby.name}&apos;s crew</h1>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+              Hello, {baby.name}&apos;s crew
+            </h1>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              One-tap logging keeps everyone in sync. Start by choosing an activity below.
+              Quick tap to log. Multiple taps within 30 seconds for
+              feeding/pumping to track volume.
             </p>
           </div>
           <QuickStats events={events} />
         </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {eventTypes.map((eventType) => (
-            <button
-              key={eventType.type}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-brand-400 hover:bg-white focus-visible:ring-2 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-300"
-              onClick={() => setActiveType(eventType.type)}
-            >
-              <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{eventType.label}</p>
-              <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{eventType.description}</p>
-              {lastEventByType[eventType.type] ? (
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  Last logged {new Date(lastEventByType[eventType.type]!).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-                </p>
-              ) : null}
-            </button>
-          ))}
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {quickActions.map((action) => {
+            const isActive =
+              (action.type === "sleep" && sleepTimer) ||
+              (volumeTracker && volumeTracker.type === action.type);
+            const volumeDisplay =
+              volumeTracker && volumeTracker.type === action.type
+                ? `${volumeTracker.amountOz}oz`
+                : null;
+
+            return (
+              <button
+                key={action.type}
+                className={`rounded-xl border p-4 text-left transition focus-visible:ring-2 ${
+                  isActive
+                    ? "border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
+                    : "border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-300"
+                }`}
+                onClick={() => handleQuickAction(action.type)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{action.emoji}</span>
+                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                      {action.label}
+                    </p>
+                  </div>
+                  {volumeDisplay && (
+                    <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
+                      {volumeDisplay}
+                    </span>
+                  )}
+                  {action.type === "sleep" && sleepTimer && (
+                    <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white animate-pulse">
+                      Active
+                    </span>
+                  )}
+                </div>
+                {lastEventByAction[action.type] && !isActive ? (
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Last:{" "}
+                    {new Date(
+                      lastEventByAction[action.type]!
+                    ).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       </section>
       <ActiveTimerList />
-      <EventComposer activeType={activeType} onClose={() => setActiveType(null)} />
     </div>
   );
 }
