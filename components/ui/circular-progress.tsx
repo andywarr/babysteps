@@ -89,6 +89,7 @@ export function CircularProgress({
     <div className="relative" ref={containerRef}>
       {isActive && (
         <svg
+          key={startTime}
           className="absolute inset-0 pointer-events-none animate-in fade-in duration-200"
           style={{
             width: "100%",

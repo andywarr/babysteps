@@ -135,7 +135,7 @@ export default function HomePage() {
           const timeSinceStart = now - currentTracker.startTime;
 
           if (timeSinceStart < VOLUME_TRACKING_DURATION) {
-            // Increment volume and reset timeout
+            // Increment volume and reset timeout with new startTime to restart animation
             clearTimeout(currentTracker.timeoutId);
             const newAmount = currentTracker.amountOz + 1;
             const timeoutId = setTimeout(() => {
@@ -147,7 +147,7 @@ export default function HomePage() {
             setVolumeTracker({
               type: action,
               amountOz: newAmount,
-              startTime: currentTracker.startTime,
+              startTime: now, // Reset startTime to restart animation
               timeoutId,
             });
             return;
