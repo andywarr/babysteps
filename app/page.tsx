@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEvents } from "@/components/ui/events-provider";
 import { QuickStats } from "@/components/ui/quick-stats";
 import { ActiveTimerList } from "@/components/ui/timer-list";
+import { CircularProgress } from "@/components/ui/circular-progress";
 
 type QuickActionType =
   | "bottle"
@@ -254,13 +255,22 @@ export default function HomePage() {
                 ? `${volumeTracker.amountOz}oz`
                 : null;
 
-            return (
+            // Determine if this action type supports volume tracking (shows countdown)
+            const isVolumeTrackedAction =
+              action.type === "bottle" ||
+              action.type === "food" ||
+              action.type === "nursing" ||
+              action.type === "pumping";
+
+            const buttonContent = (
               <button
                 key={action.type}
-                className={`rounded-xl border p-4 text-left transition focus-visible:ring-2 ${
-                  isActive
-                    ? "border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
-                    : "border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-300"
+                className={`rounded-xl p-4 text-left transition focus-visible:ring-2 w-full ${
+                  isActive && isVolumeTrackedAction
+                    ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
+                    : isActive
+                    ? "border border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
+                    : "border border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-300"
                 }`}
                 onClick={() => handleQuickAction(action.type)}
               >
@@ -297,6 +307,22 @@ export default function HomePage() {
                 ) : null}
               </button>
             );
+
+            // Wrap volume-tracked actions with CircularProgress
+            if (isVolumeTrackedAction) {
+              return (
+                <CircularProgress
+                  key={action.type}
+                  isActive={volumeTracker?.type === action.type}
+                  startTime={volumeTracker?.startTime}
+                  duration={VOLUME_TRACKING_DURATION}
+                >
+                  {buttonContent}
+                </CircularProgress>
+              );
+            }
+
+            return buttonContent;
           })}
         </div>
       </section>
