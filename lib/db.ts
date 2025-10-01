@@ -16,11 +16,21 @@ export class BabystepsDatabase extends Dexie {
 
   constructor() {
     super("babysteps");
+
+    // Version 1: Initial schema
     this.version(1).stores({
       events: "id, timestamp, type, babyId",
       timers: "id, babyId, caregiverId",
       outbox: "id, eventId",
-      invites: "id, email, status"
+      invites: "id, email, status",
+    });
+
+    // Version 2: Add createdAt index to invites table
+    this.version(2).stores({
+      events: "id, timestamp, type, babyId",
+      timers: "id, babyId, caregiverId",
+      outbox: "id, eventId",
+      invites: "id, email, status, createdAt",
     });
   }
 }
