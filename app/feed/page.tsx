@@ -14,7 +14,7 @@ const filters: { value: EventType | "all"; label: string }[] = [
   { value: "sleep", label: "Sleep" },
   { value: "pump", label: "Pumps" },
   { value: "med", label: "Meds" },
-  { value: "note", label: "Notes" }
+  { value: "note", label: "Notes" },
 ];
 
 export default function HistoryPage() {
@@ -44,7 +44,7 @@ export default function HistoryPage() {
       "timestamp",
       "caregiverId",
       "note",
-      "metadata"
+      "metadata",
     ];
     const rows = filteredEvents.map((event) => [
       event.id,
@@ -52,9 +52,13 @@ export default function HistoryPage() {
       event.timestamp,
       event.caregiverId,
       event.note ?? "",
-      JSON.stringify(event)
+      JSON.stringify(event),
     ]);
-    const csv = [header, ...rows].map((row) => row.map((value) => `"${value.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [header, ...rows]
+      .map((row) =>
+        row.map((value) => `"${value.replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     saveAs(blob, `babysteps-history-${dayjs().format("YYYY-MM-DD-HH-mm")}.csv`);
   };
@@ -63,8 +67,13 @@ export default function HistoryPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Event history</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300">Filter by type or date, or export a CSV for your pediatrician.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            Feed
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            A reverse chronological feed of all events. Filter by type or date,
+            or export a CSV for your pediatrician.
+          </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -72,7 +81,9 @@ export default function HistoryPage() {
             <select
               className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               value={filterType}
-              onChange={(event) => setFilterType(event.target.value as EventType | "all")}
+              onChange={(event) =>
+                setFilterType(event.target.value as EventType | "all")
+              }
             >
               {filters.map((filter) => (
                 <option key={filter.value} value={filter.value}>
@@ -101,8 +112,13 @@ export default function HistoryPage() {
 
       <div className="space-y-6">
         {grouped.map(([day, dayEvents]) => (
-          <div key={day} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{day}</h2>
+          <div
+            key={day}
+            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+          >
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              {day}
+            </h2>
             <ul className="mt-3 space-y-3">
               {dayEvents.map((event) => (
                 <li
@@ -113,9 +129,13 @@ export default function HistoryPage() {
                     <p className="font-semibold text-slate-900 dark:text-slate-100">
                       {formatEventLabel(event)}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-300">{dayjs(event.timestamp).format("LT")}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-300">
+                      {dayjs(event.timestamp).format("LT")}
+                    </p>
                     {event.note ? (
-                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{event.note}</p>
+                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                        {event.note}
+                      </p>
                     ) : null}
                   </div>
                   <button
@@ -130,7 +150,9 @@ export default function HistoryPage() {
           </div>
         ))}
         {grouped.length === 0 ? (
-          <p className="text-center text-sm text-slate-500 dark:text-slate-300">No events logged yet.</p>
+          <p className="text-center text-sm text-slate-500 dark:text-slate-300">
+            No events logged yet.
+          </p>
         ) : null}
       </div>
     </div>
@@ -140,10 +162,10 @@ export default function HistoryPage() {
 function groupEvents(events: BabyEvent[]): [string, BabyEvent[]][] {
   const map = new Map<string, { label: string; items: BabyEvent[] }>();
   for (const event of events) {
-    const day = dayjs(event.timestamp).startOf('day');
-    const key = day.format('YYYY-MM-DD');
+    const day = dayjs(event.timestamp).startOf("day");
+    const key = day.format("YYYY-MM-DD");
     if (!map.has(key)) {
-      map.set(key, { label: day.format('dddd, MMM D'), items: [] });
+      map.set(key, { label: day.format("dddd, MMM D"), items: [] });
     }
     map.get(key)!.items.push(event);
   }
@@ -155,7 +177,9 @@ function groupEvents(events: BabyEvent[]): [string, BabyEvent[]][] {
 function formatEventLabel(event: BabyEvent) {
   switch (event.type) {
     case "feed":
-      return `${capitalize(event.method ?? "Feed")} • ${event.durationMinutes ?? "–"} min`;
+      return `${capitalize(event.method ?? "Feed")} • ${
+        event.durationMinutes ?? "–"
+      } min`;
     case "diaper":
       return `${capitalize(event.diaperType)} diaper`;
     case "sleep":

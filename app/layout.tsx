@@ -5,6 +5,7 @@ import { PropsWithChildren } from "react";
 import Link from "next/link";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { EventsProvider } from "@/components/ui/events-provider";
+import { BottomNav } from "@/components/ui/bottom-nav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,34 +33,12 @@ export default function RootLayout({ children }: PropsWithChildren) {
                   >
                     Babysteps
                   </Link>
-                  <nav className="flex items-center gap-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                    <Link
-                      href="/history"
-                      className="hover:text-brand-600 dark:hover:text-brand-200"
-                    >
-                      History
-                    </Link>
-                    <Link
-                      href="/stats"
-                      className="hover:text-brand-600 dark:hover:text-brand-200"
-                    >
-                      Stats
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="hover:text-brand-600 dark:hover:text-brand-200"
-                    >
-                      Settings
-                    </Link>
-                  </nav>
                 </div>
               </header>
-              <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
+              <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 pb-24">
                 {children}
               </main>
-              <footer className="border-t border-slate-200 bg-white/80 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-400">
-                Built for sleepy caregivers with ❤️
-              </footer>
+              <BottomNav />
             </div>
           </EventsProvider>
         </ToastProvider>
