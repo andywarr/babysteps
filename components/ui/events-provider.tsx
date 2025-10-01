@@ -1,13 +1,28 @@
 "use client";
 
-import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  PropsWithChildren,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import utc from "dayjs/plugin/utc";
 
 import { db } from "@/lib/db";
-import type { ActiveTimer, BabyEvent, BabyProfile, EventType, InviteRequest, TimerType } from "@/lib/types/events";
+import type {
+  ActiveTimer,
+  BabyEvent,
+  BabyProfile,
+  EventType,
+  InviteRequest,
+  TimerType,
+} from "@/lib/types/events";
 
 import { useToast } from "./toast-provider";
 
@@ -19,19 +34,30 @@ type EventsContextValue = {
   caregivers: InviteRequest[];
   events: BabyEvent[];
   timers: ActiveTimer[];
-  logEvent: (event: Partial<BabyEvent> & { type: EventType; timestamp?: string }) => Promise<void>;
+  logEvent: (
+    event: Partial<BabyEvent> & { type: EventType; timestamp?: string }
+  ) => Promise<void>;
   removeEvent: (id: string) => Promise<void>;
-  startTimer: (type: TimerType, metadata?: Record<string, unknown>) => Promise<ActiveTimer>;
-  stopTimer: (timerId: string, metadata?: Record<string, unknown>) => Promise<void>;
+  startTimer: (
+    type: TimerType,
+    metadata?: Record<string, unknown>
+  ) => Promise<ActiveTimer>;
+  stopTimer: (
+    timerId: string,
+    metadata?: Record<string, unknown>
+  ) => Promise<void>;
   cancelTimer: (timerId: string) => Promise<void>;
   updateBabyProfile: (profile: Partial<BabyProfile>) => void;
-  inviteCaregiver: (input: { email: string; role: "admin" | "member" | "viewer" }) => Promise<void>;
+  inviteCaregiver: (input: {
+    email: string;
+    role: "admin" | "member" | "viewer";
+  }) => Promise<void>;
 };
 
 const defaultBaby: BabyProfile = {
   id: "default-baby",
   name: "Baby",
-  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
 };
 
 const EventsContext = createContext<EventsContextValue | undefined>(undefined);
@@ -53,7 +79,8 @@ export function EventsProvider({ children }: PropsWithChildren) {
   const { pushToast } = useToast();
 
   useEffect(() => {
-    if (typeof window === "undefined" || !('serviceWorker' in navigator)) return;
+    if (typeof window === "undefined" || !("serviceWorker" in navigator))
+      return;
     navigator.serviceWorker.register("/sw.js").catch(() => {});
   }, []);
   useEffect(() => {
@@ -61,17 +88,33 @@ export function EventsProvider({ children }: PropsWithChildren) {
     window.localStorage.setItem("babysteps:baby", JSON.stringify(baby));
   }, [baby]);
 
-  const events = useLiveQuery(async () => {
-    return db.events.orderBy("timestamp").reverse().filter((event) => event.babyId === baby.id).toArray();
-  }, [baby.id], []);
+  const events = useLiveQuery(
+    async () => {
+      return db.events
+        .orderBy("timestamp")
+        .reverse()
+        .filter((event) => event.babyId === baby.id)
+        .toArray();
+    },
+    [baby.id],
+    []
+  );
 
-  const timers = useLiveQuery(async () => {
-    return db.timers.where("babyId").equals(baby.id).toArray();
-  }, [baby.id], []);
+  const timers = useLiveQuery(
+    async () => {
+      return db.timers.where("babyId").equals(baby.id).toArray();
+    },
+    [baby.id],
+    []
+  );
 
-  const caregivers = useLiveQuery(async () => {
-    return db.invites.orderBy("createdAt").reverse().toArray();
-  }, [], []);
+  const caregivers = useLiveQuery(
+    async () => {
+      return db.invites.orderBy("createdAt").reverse().toArray();
+    },
+    [],
+    []
+  );
 
   const logEvent = useCallback<EventsContextValue["logEvent"]>(
     async (input) => {
@@ -87,23 +130,23 @@ export function EventsProvider({ children }: PropsWithChildren) {
         note: input.note,
         ...(input as BabyEvent),
         timestamp,
-        type: input.type
+        type: input.type,
       };
       await db.events.put(event);
       await db.outbox.put({
         id: crypto.randomUUID(),
         eventId: event.id,
         payload: event,
-        createdAt: now
+        createdAt: now,
       });
       pushToast({
-        title: `${formatEventType(event.type)} logged`,
+        title: `${formatEventType(event)} logged`,
         description: dayjs(event.timestamp).format("lll"),
         actionLabel: "Undo",
         onAction: async () => {
           await db.events.delete(event.id);
           await db.outbox.where("eventId").equals(event.id).delete();
-        }
+        },
       });
     },
     [baby.id, pushToast]
@@ -122,7 +165,7 @@ export function EventsProvider({ children }: PropsWithChildren) {
         caregiverId: "local-user",
         startedAt: new Date().toISOString(),
         type,
-        metadata
+        metadata,
       };
       await db.timers.put(timer);
       pushToast({ title: `${formatEventType(type)} timer started` });
@@ -136,29 +179,45 @@ export function EventsProvider({ children }: PropsWithChildren) {
       const timer = await db.timers.get(timerId);
       if (!timer) return;
       const endedAt = new Date();
-      const durationMinutes = Math.max(1, Math.round((endedAt.getTime() - new Date(timer.startedAt).getTime()) / 60000));
+      const durationMinutes = Math.max(
+        1,
+        Math.round(
+          (endedAt.getTime() - new Date(timer.startedAt).getTime()) / 60000
+        )
+      );
       const eventType: EventType = timer.type === "feed" ? "feed" : "sleep";
-      const timerMetadata = { ...(timer.metadata ?? {}), ...(metadata ?? {}) } as Record<string, unknown>;
+      const timerMetadata = {
+        ...(timer.metadata ?? {}),
+        ...(metadata ?? {}),
+      } as Record<string, unknown>;
       await db.timers.delete(timerId);
       const payload: Partial<BabyEvent> = {
         type: eventType,
         timestamp: endedAt.toISOString(),
-        note: typeof timerMetadata.note === 'string' ? (timerMetadata.note as string) : undefined,
-        durationMinutes
+        note:
+          typeof timerMetadata.note === "string"
+            ? (timerMetadata.note as string)
+            : undefined,
+        durationMinutes,
       };
       if (eventType === "feed") {
         payload.method = (timerMetadata.method as any) ?? "breast";
         payload.side = timerMetadata.side as any;
       }
-      await logEvent(payload as Partial<BabyEvent> & { type: EventType; timestamp: string });
+      await logEvent(
+        payload as Partial<BabyEvent> & { type: EventType; timestamp: string }
+      );
     },
     [logEvent]
   );
 
-  const cancelTimer = useCallback(async (timerId: string) => {
-    await db.timers.delete(timerId);
-    pushToast({ title: "Timer canceled", level: "info" });
-  }, [pushToast]);
+  const cancelTimer = useCallback(
+    async (timerId: string) => {
+      await db.timers.delete(timerId);
+      pushToast({ title: "Timer canceled", level: "info" });
+    },
+    [pushToast]
+  );
 
   const updateBabyProfile = useCallback((profile: Partial<BabyProfile>) => {
     setBaby((current) => ({ ...current, ...profile }));
@@ -171,13 +230,13 @@ export function EventsProvider({ children }: PropsWithChildren) {
         email,
         role,
         createdAt: new Date().toISOString(),
-        status: "pending"
+        status: "pending",
       };
       await db.invites.put(invite);
       pushToast({
         title: "Invite queued",
         description: `${email} (${role}) will be synced when you're online`,
-        level: "success"
+        level: "success",
       });
     },
     [pushToast]
@@ -195,12 +254,26 @@ export function EventsProvider({ children }: PropsWithChildren) {
       stopTimer,
       cancelTimer,
       updateBabyProfile,
-      inviteCaregiver
+      inviteCaregiver,
     }),
-    [baby, caregivers, events, timers, logEvent, removeEvent, startTimer, stopTimer, cancelTimer, updateBabyProfile, inviteCaregiver]
+    [
+      baby,
+      caregivers,
+      events,
+      timers,
+      logEvent,
+      removeEvent,
+      startTimer,
+      stopTimer,
+      cancelTimer,
+      updateBabyProfile,
+      inviteCaregiver,
+    ]
   );
 
-  return <EventsContext.Provider value={value}>{children}</EventsContext.Provider>;
+  return (
+    <EventsContext.Provider value={value}>{children}</EventsContext.Provider>
+  );
 }
 
 export function useEvents() {
@@ -211,11 +284,36 @@ export function useEvents() {
   return context;
 }
 
-function formatEventType(type: EventType | TimerType) {
-  switch (type) {
+function formatEventType(input: BabyEvent | EventType | TimerType): string {
+  if (typeof input === "string") {
+    // Handle string types (for timers)
+    switch (input) {
+      case "feed":
+        return "Feed";
+      case "diaper":
+        return "Diaper";
+      case "sleep":
+        return "Sleep";
+      case "pump":
+        return "Pump";
+      case "med":
+        return "Medication";
+      case "note":
+        return "Note";
+      default:
+        return input;
+    }
+  }
+
+  // Handle event objects
+  switch (input.type) {
     case "feed":
       return "Feed";
     case "diaper":
+      const diaperType = (input as any).diaperType;
+      if (diaperType === "wet") return "Wet diaper";
+      if (diaperType === "dirty") return "Dirty diaper";
+      if (diaperType === "mixed") return "Mixed diaper";
       return "Diaper";
     case "sleep":
       return "Sleep";
@@ -226,6 +324,6 @@ function formatEventType(type: EventType | TimerType) {
     case "note":
       return "Note";
     default:
-      return type;
+      return input.type;
   }
 }
