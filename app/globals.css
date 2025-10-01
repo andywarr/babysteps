@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+a {
+  @apply text-brand-600 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200;
+}
+
+button:focus-visible,
+a:focus-visible {
+  @apply outline-none ring-2 ring-brand-500 ring-offset-2 dark:ring-offset-slate-900;
+}
