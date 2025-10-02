@@ -231,21 +231,22 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-              Hello, {baby.name}&apos;s crew
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              Quick tap to log. Multiple taps within 30 seconds for
-              feeding/pumping to track volume.
-            </p>
+    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
+      <div className="w-full max-w-4xl space-y-8">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+                Hello, {baby.name}&apos;s crew
+              </h1>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Quick tap to log. Multiple taps within 30 seconds for
+                feeding/pumping to track volume.
+              </p>
+            </div>
+            <QuickStats events={events} />
           </div>
-          <QuickStats events={events} />
-        </div>
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
           {quickActions.map((action) => {
             const isActive =
               (action.type === "sleep" && sleepTimer) ||
@@ -332,6 +333,7 @@ export default function HomePage() {
         </div>
       </section>
       <ActiveTimerList />
+      </div>
     </div>
   );
 }

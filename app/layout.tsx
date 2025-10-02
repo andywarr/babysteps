@@ -25,16 +25,6 @@ export default function RootLayout({ children }: PropsWithChildren) {
         <ToastProvider>
           <EventsProvider>
             <div className="flex min-h-screen flex-col">
-              <header className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-                <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4">
-                  <Link
-                    href="/"
-                    className="text-xl font-semibold text-brand-600 dark:text-brand-300"
-                  >
-                    Babysteps
-                  </Link>
-                </div>
-              </header>
               <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 pb-24">
                 {children}
               </main>
