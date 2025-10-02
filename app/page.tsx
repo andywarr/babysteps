@@ -247,92 +247,92 @@ export default function HomePage() {
             <QuickStats events={events} />
           </div>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {quickActions.map((action) => {
-            const isActive =
-              (action.type === "sleep" && sleepTimer) ||
-              (volumeTracker && volumeTracker.type === action.type);
-            const volumeDisplay =
-              volumeTracker && volumeTracker.type === action.type
-                ? `${volumeTracker.amountOz}oz`
-                : null;
+            {quickActions.map((action) => {
+              const isActive =
+                (action.type === "sleep" && sleepTimer) ||
+                (volumeTracker && volumeTracker.type === action.type);
+              const volumeDisplay =
+                volumeTracker && volumeTracker.type === action.type
+                  ? `${volumeTracker.amountOz}oz`
+                  : null;
 
-            // Determine if this action type supports volume tracking (shows countdown)
-            const isVolumeTrackedAction =
-              action.type === "bottle" ||
-              action.type === "food" ||
-              action.type === "nursing" ||
-              action.type === "pumping";
+              // Determine if this action type supports volume tracking (shows countdown)
+              const isVolumeTrackedAction =
+                action.type === "bottle" ||
+                action.type === "food" ||
+                action.type === "nursing" ||
+                action.type === "pumping";
 
-            const buttonContent = (
-              <button
-                key={action.type}
-                className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center justify-center ${
-                  isActive && isVolumeTrackedAction
-                    ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
-                    : isActive
-                    ? "border border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
-                    : "border border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-300"
-                }`}
-                onClick={() => handleQuickAction(action.type)}
-              >
-                <div className="flex flex-col items-center gap-2 flex-1 justify-center">
-                  <span className="text-5xl">{action.emoji}</span>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center">
-                    {action.label}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 w-full justify-center mt-2">
-                  {volumeDisplay && (
-                    <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
-                      {volumeDisplay}
-                    </span>
-                  )}
-                  {action.type === "sleep" && sleepTimer && (
-                    <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white animate-pulse">
-                      Active
-                    </span>
-                  )}
-                </div>
-                {action.type !== "misc" && lastEventByAction[action.type] ? (
-                  <p
-                    className={`text-xs ${
-                      isActive
-                        ? "invisible"
-                        : "text-slate-500 dark:text-slate-400"
-                    }`}
-                  >
-                    {new Date(
-                      lastEventByAction[action.type]!
-                    ).toLocaleTimeString([], {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                ) : (
-                  <div className="h-5" />
-                )}
-              </button>
-            );
-
-            // Wrap volume-tracked actions with CircularProgress
-            if (isVolumeTrackedAction) {
-              return (
-                <CircularProgress
+              const buttonContent = (
+                <button
                   key={action.type}
-                  isActive={volumeTracker?.type === action.type}
-                  startTime={volumeTracker?.startTime}
-                  duration={VOLUME_TRACKING_DURATION}
+                  className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center justify-center ${
+                    isActive && isVolumeTrackedAction
+                      ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
+                      : isActive
+                      ? "border border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
+                      : "border border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-300"
+                  }`}
+                  onClick={() => handleQuickAction(action.type)}
                 >
-                  {buttonContent}
-                </CircularProgress>
+                  <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+                    <span className="text-5xl">{action.emoji}</span>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center">
+                      {action.label}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 w-full justify-center mt-2">
+                    {volumeDisplay && (
+                      <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
+                        {volumeDisplay}
+                      </span>
+                    )}
+                    {action.type === "sleep" && sleepTimer && (
+                      <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white animate-pulse">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  {action.type !== "misc" && lastEventByAction[action.type] ? (
+                    <p
+                      className={`text-xs ${
+                        isActive
+                          ? "invisible"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {new Date(
+                        lastEventByAction[action.type]!
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  ) : (
+                    <div className="h-5" />
+                  )}
+                </button>
               );
-            }
 
-            return buttonContent;
-          })}
-        </div>
-      </section>
-      <ActiveTimerList />
+              // Wrap volume-tracked actions with CircularProgress
+              if (isVolumeTrackedAction) {
+                return (
+                  <CircularProgress
+                    key={action.type}
+                    isActive={volumeTracker?.type === action.type}
+                    startTime={volumeTracker?.startTime}
+                    duration={VOLUME_TRACKING_DURATION}
+                  >
+                    {buttonContent}
+                  </CircularProgress>
+                );
+              }
+
+              return buttonContent;
+            })}
+          </div>
+        </section>
+        <ActiveTimerList />
       </div>
     </div>
   );
