@@ -266,7 +266,7 @@ export default function HomePage() {
               const buttonContent = (
                 <button
                   key={action.type}
-                  className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center justify-center ${
+                  className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center justify-between ${
                     isActive && isVolumeTrackedAction
                       ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
                       : isActive
@@ -275,13 +275,13 @@ export default function HomePage() {
                   }`}
                   onClick={() => handleQuickAction(action.type)}
                 >
-                  <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+                  <div className="flex flex-col items-center gap-2">
                     <span className="text-5xl">{action.emoji}</span>
                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center">
                       {action.label}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 w-full justify-center mt-2">
+                  <div className="flex items-center gap-2 w-full justify-center h-6">
                     {volumeDisplay && (
                       <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
                         {volumeDisplay}
@@ -293,24 +293,20 @@ export default function HomePage() {
                       </span>
                     )}
                   </div>
-                  {action.type !== "misc" && lastEventByAction[action.type] ? (
-                    <p
-                      className={`text-xs ${
-                        isActive
-                          ? "invisible"
-                          : "text-slate-500 dark:text-slate-400"
-                      }`}
-                    >
-                      {new Date(
-                        lastEventByAction[action.type]!
-                      ).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  ) : (
-                    <div className="h-5" />
-                  )}
+                  <div className="h-5 flex items-center justify-center">
+                    {action.type !== "misc" &&
+                    lastEventByAction[action.type] &&
+                    !isActive ? (
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {new Date(
+                          lastEventByAction[action.type]!
+                        ).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    ) : null}
+                  </div>
                 </button>
               );
 
