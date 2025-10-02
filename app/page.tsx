@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEvents } from "@/components/ui/events-provider";
 import { QuickStats } from "@/components/ui/quick-stats";
-import { ActiveTimerList } from "@/components/ui/timer-list";
 import { CircularProgress } from "@/components/ui/circular-progress";
+import { useInterval } from "@/lib/hooks/use-interval";
 
 type QuickActionType =
   | "bottle"
@@ -38,6 +38,9 @@ export default function HomePage() {
     null
   );
   const volumeTrackerRef = useRef<VolumeTracker | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useInterval(() => setNow(Date.now()), 1000);
 
   // Sync ref with state
   useEffect(() => {
@@ -288,8 +291,15 @@ export default function HomePage() {
                       </span>
                     )}
                     {action.type === "sleep" && sleepTimer && (
-                      <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white animate-pulse">
-                        Active
+                      <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
+                        {Math.max(
+                          0,
+                          Math.round(
+                            (now - new Date(sleepTimer.startedAt).getTime()) /
+                              60000
+                          )
+                        )}{" "}
+                        min
                       </span>
                     )}
                   </div>
@@ -328,7 +338,6 @@ export default function HomePage() {
             })}
           </div>
         </section>
-        <ActiveTimerList />
       </div>
     </div>
   );
