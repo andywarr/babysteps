@@ -245,7 +245,7 @@ export default function HomePage() {
           </div>
           <QuickStats events={events} />
         </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
           {quickActions.map((action) => {
             const isActive =
               (action.type === "sleep" && sleepTimer) ||
@@ -265,7 +265,7 @@ export default function HomePage() {
             const buttonContent = (
               <button
                 key={action.type}
-                className={`rounded-xl p-4 text-left transition focus-visible:ring-2 w-full ${
+                className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center justify-center ${
                   isActive && isVolumeTrackedAction
                     ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
                     : isActive
@@ -274,13 +274,13 @@ export default function HomePage() {
                 }`}
                 onClick={() => handleQuickAction(action.type)}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{action.emoji}</span>
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {action.label}
-                    </p>
-                  </div>
+                <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+                  <span className="text-5xl">{action.emoji}</span>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center">
+                    {action.label}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 w-full justify-center mt-2">
                   {volumeDisplay && (
                     <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
                       {volumeDisplay}
@@ -294,13 +294,12 @@ export default function HomePage() {
                 </div>
                 {action.type !== "misc" && lastEventByAction[action.type] ? (
                   <p
-                    className={`mt-2 text-xs ${
+                    className={`text-xs ${
                       isActive
                         ? "invisible"
                         : "text-slate-500 dark:text-slate-400"
                     }`}
                   >
-                    Last:{" "}
                     {new Date(
                       lastEventByAction[action.type]!
                     ).toLocaleTimeString([], {
@@ -309,7 +308,7 @@ export default function HomePage() {
                     })}
                   </p>
                 ) : (
-                  <div className="mt-2 h-5" />
+                  <div className="h-5" />
                 )}
               </button>
             );
