@@ -292,10 +292,14 @@ export default function HomePage() {
                     </span>
                   )}
                 </div>
-                {action.type !== "misc" &&
-                lastEventByAction[action.type] &&
-                !isActive ? (
-                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                {action.type !== "misc" && lastEventByAction[action.type] ? (
+                  <p
+                    className={`mt-2 text-xs ${
+                      isActive
+                        ? "invisible"
+                        : "text-slate-500 dark:text-slate-400"
+                    }`}
+                  >
                     Last:{" "}
                     {new Date(
                       lastEventByAction[action.type]!
@@ -304,7 +308,9 @@ export default function HomePage() {
                       minute: "2-digit",
                     })}
                   </p>
-                ) : null}
+                ) : (
+                  <div className="mt-2 h-5" />
+                )}
               </button>
             );
 
