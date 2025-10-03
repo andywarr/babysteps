@@ -240,16 +240,16 @@ export default function HomePage() {
     emoji: string;
   }[] = [
     { type: "bottle", label: "Bottle", emoji: "🍼" },
-    { type: "food", label: "Food", emoji: "🥄" },
-    { type: "wet", label: "Wet Diaper", emoji: "💧" },
-    { type: "dirty", label: "Dirty Diaper", emoji: "💩" },
-    { type: "sleep", label: sleepTimer ? "End Sleep" : "Sleep", emoji: "😴" },
     {
       type: "nursing",
       label: nursingTimer ? "End Nursing" : "Nursing",
       emoji: "🤱",
     },
     { type: "pumping", label: "Pumping", emoji: "🫙" },
+    { type: "food", label: "Food", emoji: "🥄" },
+    { type: "dirty", label: "Dirty Diaper", emoji: "💩" },
+    { type: "wet", label: "Wet Diaper", emoji: "💧" },
+    { type: "sleep", label: sleepTimer ? "End Sleep" : "Sleep", emoji: "😴" },
     { type: "misc", label: "Log", emoji: "📝" },
   ];
 
