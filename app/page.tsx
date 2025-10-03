@@ -123,11 +123,7 @@ export default function HomePage() {
       const now = Date.now();
 
       // Handle volume-tracked actions (bottle, food, pumping)
-      if (
-        action === "bottle" ||
-        action === "food" ||
-        action === "pumping"
-      ) {
+      if (action === "bottle" || action === "food" || action === "pumping") {
         const currentTracker = volumeTrackerRef.current;
 
         // If there's an active tracker for the same action type
@@ -238,7 +234,11 @@ export default function HomePage() {
     { type: "wet", label: "Wet Diaper", emoji: "💧" },
     { type: "dirty", label: "Dirty Diaper", emoji: "💩" },
     { type: "sleep", label: sleepTimer ? "End Sleep" : "Sleep", emoji: "😴" },
-    { type: "nursing", label: nursingTimer ? "End Nursing" : "Nursing", emoji: "🤱" },
+    {
+      type: "nursing",
+      label: nursingTimer ? "End Nursing" : "Nursing",
+      emoji: "🤱",
+    },
     { type: "pumping", label: "Pumping", emoji: "🫙" },
     { type: "misc", label: "Log", emoji: "📝" },
   ];
