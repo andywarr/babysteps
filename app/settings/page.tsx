@@ -9,7 +9,10 @@ export default function SettingsPage() {
   const [name, setName] = useState(baby.name);
   const [timezone, setTimezone] = useState(baby.timezone);
   const [birthday, setBirthday] = useState(baby.birthday ?? "");
-  const [quietHours, setQuietHours] = useState({ start: "22:00", end: "06:00" });
+  const [quietHours, setQuietHours] = useState({
+    start: "22:00",
+    end: "06:00",
+  });
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member" | "viewer">("member");
 
@@ -27,10 +30,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Baby profile</h1>
-        <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={submitProfile}>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+          Baby profile
+        </h1>
+        <form
+          className="mt-4 grid gap-4 sm:grid-cols-2"
+          onSubmit={submitProfile}
+        >
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Name
             <input
@@ -63,20 +71,35 @@ export default function SettingsPage() {
                 type="time"
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={quietHours.start}
-                onChange={(event) => setQuietHours((current) => ({ ...current, start: event.target.value }))}
+                onChange={(event) =>
+                  setQuietHours((current) => ({
+                    ...current,
+                    start: event.target.value,
+                  }))
+                }
               />
               <span className="text-xs text-slate-500">to</span>
               <input
                 type="time"
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 value={quietHours.end}
-                onChange={(event) => setQuietHours((current) => ({ ...current, end: event.target.value }))}
+                onChange={(event) =>
+                  setQuietHours((current) => ({
+                    ...current,
+                    end: event.target.value,
+                  }))
+                }
               />
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Notifications pause overnight during quiet hours.</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
+              Notifications pause overnight during quiet hours.
+            </p>
           </label>
           <div className="sm:col-span-2 flex justify-end">
-            <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            <button
+              type="submit"
+              className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+            >
               Save profile
             </button>
           </div>
@@ -86,11 +109,18 @@ export default function SettingsPage() {
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Caregiver invites</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300">Invite partners, nannies, or grandparents to log together.</p>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              Caregiver invites
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Invite partners, nannies, or grandparents to log together.
+            </p>
           </div>
         </div>
-        <form className="mt-4 grid gap-3 sm:grid-cols-[2fr,1fr,auto]" onSubmit={submitInvite}>
+        <form
+          className="mt-4 grid gap-3 sm:grid-cols-[2fr,1fr,auto]"
+          onSubmit={submitInvite}
+        >
           <input
             type="email"
             required
@@ -108,7 +138,10 @@ export default function SettingsPage() {
             <option value="member">Member</option>
             <option value="viewer">Viewer</option>
           </select>
-          <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+          <button
+            type="submit"
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+          >
             Send invite
           </button>
         </form>
@@ -119,14 +152,20 @@ export default function SettingsPage() {
               className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
             >
               <div>
-                <p className="font-medium text-slate-900 dark:text-slate-100">{invite.email}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-300">{invite.role} • {invite.status}</p>
+                <p className="font-medium text-slate-900 dark:text-slate-100">
+                  {invite.email}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">
+                  {invite.role} • {invite.status}
+                </p>
               </div>
               <span className="text-xs text-slate-400">Queued</span>
             </li>
           ))}
           {caregivers.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-300">No invites yet.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-300">
+              No invites yet.
+            </p>
           ) : null}
         </ul>
       </section>

@@ -234,103 +234,102 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-start justify-center">
-      <div className="w-full max-w-4xl space-y-8">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <QuickStats events={events} />
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {quickActions.map((action) => {
-              const isActive =
-                (action.type === "sleep" && sleepTimer) ||
-                (volumeTracker && volumeTracker.type === action.type);
-              const volumeDisplay =
-                volumeTracker && volumeTracker.type === action.type
-                  ? `${volumeTracker.amountOz}oz`
-                  : null;
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <QuickStats events={events} />
+      </section>
 
-              // Determine if this action type supports volume tracking (shows countdown)
-              const isVolumeTrackedAction =
-                action.type === "bottle" ||
-                action.type === "food" ||
-                action.type === "nursing" ||
-                action.type === "pumping";
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {quickActions.map((action) => {
+            const isActive =
+              (action.type === "sleep" && sleepTimer) ||
+              (volumeTracker && volumeTracker.type === action.type);
+            const volumeDisplay =
+              volumeTracker && volumeTracker.type === action.type
+                ? `${volumeTracker.amountOz}oz`
+                : null;
 
-              const buttonContent = (
-                <button
-                  key={action.type}
-                  className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center relative ${
-                    isActive && isVolumeTrackedAction
-                      ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
-                      : isActive
-                      ? "border border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
-                      : "border border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-600 dark:hover:bg-slate-700"
-                  }`}
-                  onClick={() => handleQuickAction(action.type)}
-                >
-                  {/* Emoji and label at 1/3 down */}
-                  <div className="absolute top-[33.33%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
-                    <span className="text-5xl">{action.emoji}</span>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center whitespace-nowrap">
-                      {action.label}
+            // Determine if this action type supports volume tracking (shows countdown)
+            const isVolumeTrackedAction =
+              action.type === "bottle" ||
+              action.type === "food" ||
+              action.type === "nursing" ||
+              action.type === "pumping";
+
+            const buttonContent = (
+              <button
+                key={action.type}
+                className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center relative ${
+                  isActive && isVolumeTrackedAction
+                    ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
+                    : isActive
+                    ? "border border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
+                    : "border border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-600 dark:hover:bg-slate-700"
+                }`}
+                onClick={() => handleQuickAction(action.type)}
+              >
+                {/* Emoji and label at 1/3 down */}
+                <div className="absolute top-[33.33%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
+                  <span className="text-5xl">{action.emoji}</span>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center whitespace-nowrap">
+                    {action.label}
+                  </p>
+                </div>
+
+                {/* Secondary content at 75% down */}
+                <div className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
+                  {volumeDisplay && (
+                    <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
+                      {volumeDisplay}
+                    </span>
+                  )}
+                  {action.type === "sleep" && sleepTimer && (
+                    <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
+                      {Math.max(
+                        0,
+                        Math.round(
+                          (now - new Date(sleepTimer.startedAt).getTime()) /
+                            60000
+                        )
+                      )}{" "}
+                      min
+                    </span>
+                  )}
+                  {action.type !== "misc" &&
+                  lastEventByAction[action.type] &&
+                  !isActive ? (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {new Date(
+                        lastEventByAction[action.type]!
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
                     </p>
-                  </div>
+                  ) : null}
+                </div>
+              </button>
+            );
 
-                  {/* Secondary content at 75% down */}
-                  <div className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
-                    {volumeDisplay && (
-                      <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
-                        {volumeDisplay}
-                      </span>
-                    )}
-                    {action.type === "sleep" && sleepTimer && (
-                      <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
-                        {Math.max(
-                          0,
-                          Math.round(
-                            (now - new Date(sleepTimer.startedAt).getTime()) /
-                              60000
-                          )
-                        )}{" "}
-                        min
-                      </span>
-                    )}
-                    {action.type !== "misc" &&
-                    lastEventByAction[action.type] &&
-                    !isActive ? (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {new Date(
-                          lastEventByAction[action.type]!
-                        ).toLocaleTimeString([], {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    ) : null}
-                  </div>
-                </button>
+            // Wrap volume-tracked actions with CircularProgress
+            if (isVolumeTrackedAction) {
+              return (
+                <CircularProgress
+                  key={action.type}
+                  isActive={volumeTracker?.type === action.type}
+                  startTime={volumeTracker?.startTime}
+                  duration={VOLUME_TRACKING_DURATION}
+                >
+                  {buttonContent}
+                </CircularProgress>
               );
+            }
 
-              // Wrap volume-tracked actions with CircularProgress
-              if (isVolumeTrackedAction) {
-                return (
-                  <CircularProgress
-                    key={action.type}
-                    isActive={volumeTracker?.type === action.type}
-                    startTime={volumeTracker?.startTime}
-                    duration={VOLUME_TRACKING_DURATION}
-                  >
-                    {buttonContent}
-                  </CircularProgress>
-                );
-              }
-
-              return buttonContent;
-            })}
-          </div>
-        </section>
-      </div>
+            return buttonContent;
+          })}
+        </div>
+      </section>
     </div>
   );
 }

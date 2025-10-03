@@ -19,9 +19,21 @@ export function QuickStats({ events }: QuickStatsProps) {
 
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      <StatPill title="Last feed" value={stats.lastFeed ?? "–"} helper={stats.lastFeedDetail} />
-      <StatPill title="24h summary" value={stats.summary24h} helper={stats.summary24hDetail} />
-      <StatPill title="7d summary" value={stats.summary7d} helper={stats.summary7dDetail} />
+      <StatPill
+        title="Last feed"
+        value={stats.lastFeed ?? "–"}
+        helper={stats.lastFeedDetail}
+      />
+      <StatPill
+        title="24h summary"
+        value={stats.summary24h}
+        helper={stats.summary24hDetail}
+      />
+      <StatPill
+        title="7d summary"
+        value={stats.summary7d}
+        helper={stats.summary7dDetail}
+      />
     </div>
   );
 }
@@ -34,10 +46,18 @@ type StatPillProps = {
 
 function StatPill({ title, value, helper }: StatPillProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-left dark:border-slate-700 dark:bg-slate-800/60">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{title}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-50">{value}</p>
-      {helper ? <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</p> : null}
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left dark:border-slate-700 dark:bg-slate-800">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {title}
+      </p>
+      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-50">
+        {value}
+      </p>
+      {helper ? (
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
+          {helper}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -54,16 +74,24 @@ type ComputedStats = {
 function buildStats(events: BabyEvent[]): ComputedStats {
   const now = dayjs();
   const lastFeedEvent = events.find((event) => event.type === "feed");
-  const lastFeed = lastFeedEvent ? `${dayjs(lastFeedEvent.timestamp).fromNow(true)} ago` : null;
+  const lastFeed = lastFeedEvent
+    ? `${dayjs(lastFeedEvent.timestamp).fromNow(true)} ago`
+    : null;
   const lastFeedDetail = lastFeedEvent
-    ? `${lastFeedEvent.method ?? ""}${lastFeedEvent.side ? ` • ${capitalize(lastFeedEvent.side)}` : ""}`.trim()
+    ? `${lastFeedEvent.method ?? ""}${
+        lastFeedEvent.side ? ` • ${capitalize(lastFeedEvent.side)}` : ""
+      }`.trim()
     : undefined;
 
   const since24h = now.subtract(24, "hour");
   const since7d = now.subtract(7, "day");
 
-  const events24h = events.filter((event) => dayjs(event.timestamp).isAfter(since24h));
-  const events7d = events.filter((event) => dayjs(event.timestamp).isAfter(since7d));
+  const events24h = events.filter((event) =>
+    dayjs(event.timestamp).isAfter(since24h)
+  );
+  const events7d = events.filter((event) =>
+    dayjs(event.timestamp).isAfter(since7d)
+  );
 
   const summary24h = summarize(events24h);
   const summary7d = summarize(events7d);
@@ -74,7 +102,7 @@ function buildStats(events: BabyEvent[]): ComputedStats {
     summary24h: summary24h.label,
     summary24hDetail: summary24h.detail,
     summary7d: summary7d.label,
-    summary7dDetail: summary7d.detail
+    summary7dDetail: summary7d.detail,
   };
 }
 
@@ -91,11 +119,15 @@ function summarize(events: BabyEvent[]): Summary {
   const diapers = events.filter((event) => event.type === "diaper").length;
   const sleepMinutes = events
     .filter((event) => event.type === "sleep")
-    .reduce((total, event) => total + ("durationMinutes" in event ? event.durationMinutes ?? 0 : 0), 0);
+    .reduce(
+      (total, event) =>
+        total + ("durationMinutes" in event ? event.durationMinutes ?? 0 : 0),
+      0
+    );
 
   return {
     label: `${feeds} feeds • ${diapers} diapers`,
-    detail: `${Math.round(sleepMinutes)} min sleep`
+    detail: `${Math.round(sleepMinutes)} min sleep`,
   };
 }
 

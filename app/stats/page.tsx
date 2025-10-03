@@ -36,8 +36,8 @@ export default function StatsPage() {
   const data = useMemo(() => buildStats(events), [events]);
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col gap-4 overflow-hidden">
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 flex-shrink-0">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <dl className="grid gap-3 sm:grid-cols-3">
           <Stat
             label="Time since feed"
@@ -57,15 +57,15 @@ export default function StatsPage() {
         </dl>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 flex flex-col flex-shrink-0">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           Last 7 days
         </h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
           Daily activity timeline showing when events occurred throughout the
           day.
         </p>
-        <div className="mt-3 h-64 w-full">
+        <div className="mt-4 h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
