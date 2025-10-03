@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-import type { BabyEvent } from "@/lib/types/events";
+import type { BabyEvent, FeedEvent } from "@/lib/types/events";
 
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
@@ -73,7 +73,9 @@ type ComputedStats = {
 
 function buildStats(events: BabyEvent[]): ComputedStats {
   const now = dayjs();
-  const lastFeedEvent = events.find((event) => event.type === "feed");
+  const lastFeedEvent = events.find(
+    (event): event is FeedEvent => event.type === "feed"
+  );
   const lastFeed = lastFeedEvent
     ? `${dayjs(lastFeedEvent.timestamp).fromNow(true)} ago`
     : null;
