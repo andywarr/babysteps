@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { saveAs } from "file-saver";
+import { Trash2 } from "lucide-react";
 
 import { useEvents } from "@/components/ui/events-provider";
 import type { BabyEvent, EventType } from "@/lib/types/events";
@@ -124,7 +125,7 @@ export default function HistoryPage() {
               {dayEvents.map((event) => (
                 <li
                   key={event.id}
-                  className="flex items-start justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800"
                 >
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-slate-100">
@@ -140,10 +141,10 @@ export default function HistoryPage() {
                     ) : null}
                   </div>
                   <button
-                    className="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-200"
+                    className="flex items-center text-brand-600 hover:text-brand-700 dark:text-brand-200"
                     onClick={() => removeEvent(event.id)}
                   >
-                    Delete
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </li>
               ))}
