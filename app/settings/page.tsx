@@ -3,9 +3,11 @@
 import { FormEvent, useState } from "react";
 
 import { useEvents } from "@/components/ui/events-provider";
+import { useToast } from "@/components/ui/toast-provider";
 
 export default function SettingsPage() {
   const { baby, updateBabyProfile, caregivers, inviteCaregiver } = useEvents();
+  const { pushToast } = useToast();
   const [name, setName] = useState(baby.name);
   const [timezone, setTimezone] = useState(baby.timezone);
   const [birthday, setBirthday] = useState(baby.birthday ?? "");
@@ -19,6 +21,11 @@ export default function SettingsPage() {
   const submitProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     updateBabyProfile({ name, timezone, birthday });
+    pushToast({
+      title: "Profile saved",
+      description: "Baby profile updated successfully",
+      level: "success",
+    });
   };
 
   const submitInvite = async (event: FormEvent<HTMLFormElement>) => {
