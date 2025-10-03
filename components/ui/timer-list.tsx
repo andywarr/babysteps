@@ -5,6 +5,10 @@ import { useEvents } from "@/components/ui/events-provider";
 import type { ActiveTimer } from "@/lib/types/events";
 import { useInterval } from "@/lib/hooks/use-interval";
 
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 export function ActiveTimerList() {
   const { timers, stopTimer, cancelTimer } = useEvents();
   const [now, setNow] = useState(() => Date.now());
@@ -36,11 +40,21 @@ type TimerCardProps = {
 
 function TimerCard({ timer, now, onStop, onCancel }: TimerCardProps) {
   const elapsedMinutes = Math.max(0, Math.round((now - new Date(timer.startedAt).getTime()) / 60000));
+  
+  const getTimerDetails = () => {
+    if (timer.type === "feed") {
+      const metadata = timer.metadata as { method?: string; side?: string } | undefined;
+      const method = metadata?.method ? capitalize(metadata.method) : "";
+      const side = metadata?.side ? capitalize(metadata.side) : "";
+      return method && side ? `${method} • ${side}` : method || side || "Feeding";
+    }
+    return "Sleep";
+  };
 
   return (
     <div className="flex flex-col justify-between rounded-xl border border-amber-200 bg-white/90 p-4 shadow-sm dark:border-amber-700/60 dark:bg-amber-900/30">
       <div>
-        <p className="text-sm font-medium text-amber-900 dark:text-amber-100">{timer.type === "feed" ? "Feeding" : "Sleep"} timer</p>
+        <p className="text-sm font-medium text-amber-900 dark:text-amber-100">{getTimerDetails()} timer</p>
         <p className="text-xs text-amber-700 dark:text-amber-200/80">
           Started {new Date(timer.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} • {elapsedMinutes} min elapsed
         </p>

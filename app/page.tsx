@@ -51,6 +51,10 @@ export default function HomePage() {
     return timers.find((t) => t.type === "sleep");
   }, [timers]);
 
+  const nursingTimer = useMemo(() => {
+    return timers.find((t) => t.type === "feed");
+  }, [timers]);
+
   const lastEventByAction = useMemo(() => {
     const result: Partial<Record<QuickActionType, string>> = {};
     for (const event of events) {
@@ -96,12 +100,6 @@ export default function HomePage() {
           method: "solid",
           amountOz: tracker.amountOz,
         });
-      } else if (tracker.type === "nursing") {
-        await logEvent({
-          type: "feed",
-          method: "breast",
-          amountOz: tracker.amountOz,
-        });
       } else if (tracker.type === "pumping") {
         await logEvent({
           type: "pump",
@@ -124,11 +122,10 @@ export default function HomePage() {
 
       const now = Date.now();
 
-      // Handle volume-tracked actions (bottle, food, nursing, pumping)
+      // Handle volume-tracked actions (bottle, food, pumping)
       if (
         action === "bottle" ||
         action === "food" ||
-        action === "nursing" ||
         action === "pumping"
       ) {
         const currentTracker = volumeTrackerRef.current;
@@ -207,10 +204,23 @@ export default function HomePage() {
         }
         return;
       }
+
+      // Handle nursing (toggle timer)
+      if (action === "nursing") {
+        if (nursingTimer) {
+          // Stop the timer
+          await stopTimer(nursingTimer.id);
+        } else {
+          // Start the timer
+          await startTimer("feed");
+        }
+        return;
+      }
     },
     [
       logEvent,
       sleepTimer,
+      nursingTimer,
       stopTimer,
       startTimer,
       finalizeVolumeTracking,
@@ -228,7 +238,7 @@ export default function HomePage() {
     { type: "wet", label: "Wet Diaper", emoji: "💧" },
     { type: "dirty", label: "Dirty Diaper", emoji: "💩" },
     { type: "sleep", label: sleepTimer ? "End Sleep" : "Sleep", emoji: "😴" },
-    { type: "nursing", label: "Nursing", emoji: "🤱" },
+    { type: "nursing", label: nursingTimer ? "End Nursing" : "Nursing", emoji: "🤱" },
     { type: "pumping", label: "Pumping", emoji: "🫙" },
     { type: "misc", label: "Log", emoji: "📝" },
   ];
@@ -244,6 +254,7 @@ export default function HomePage() {
           {quickActions.map((action) => {
             const isActive =
               (action.type === "sleep" && sleepTimer) ||
+              (action.type === "nursing" && nursingTimer) ||
               (volumeTracker && volumeTracker.type === action.type);
             const volumeDisplay =
               volumeTracker && volumeTracker.type === action.type
@@ -254,7 +265,6 @@ export default function HomePage() {
             const isVolumeTrackedAction =
               action.type === "bottle" ||
               action.type === "food" ||
-              action.type === "nursing" ||
               action.type === "pumping";
 
             const buttonContent = (
@@ -290,6 +300,18 @@ export default function HomePage() {
                         0,
                         Math.round(
                           (now - new Date(sleepTimer.startedAt).getTime()) /
+                            60000
+                        )
+                      )}{" "}
+                      min
+                    </span>
+                  )}
+                  {action.type === "nursing" && nursingTimer && (
+                    <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
+                      {Math.max(
+                        0,
+                        Math.round(
+                          (now - new Date(nursingTimer.startedAt).getTime()) /
                             60000
                         )
                       )}{" "}

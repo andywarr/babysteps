@@ -33,7 +33,6 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
   const [feedFields, setFeedFields] = useState({
     method: "breast",
     side: "left",
-    durationMinutes: 0,
     amountOz: 0,
   });
   const [diaperField, setDiaperField] = useState("wet");
@@ -54,7 +53,6 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
     setFeedFields({
       method: "breast",
       side: "left",
-      durationMinutes: 0,
       amountOz: 0,
     });
     setDiaperField("wet");
@@ -101,7 +99,6 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           note,
           method: feedFields.method as any,
           side: feedFields.side as any,
-          durationMinutes: feedFields.durationMinutes || undefined,
           amountOz: feedFields.amountOz || undefined,
         });
         break;
@@ -165,6 +162,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
       await startTimer("feed", {
         method: feedFields.method,
         side: feedFields.side,
+        note,
       });
     } else {
       await startTimer("feed");
@@ -248,21 +246,6 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
                 <option value="right">Right</option>
                 <option value="both">Both</option>
               </select>
-            </label>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Duration (min)
-              <input
-                type="number"
-                min={0}
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-                value={feedFields.durationMinutes}
-                onChange={(event) =>
-                  setFeedFields((current) => ({
-                    ...current,
-                    durationMinutes: Number(event.target.value),
-                  }))
-                }
-              />
             </label>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
               Amount (oz)
