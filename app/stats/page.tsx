@@ -67,7 +67,7 @@ export default function StatsPage() {
         </p>
         <div className="mt-4 h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
               <XAxis
                 type="number"
@@ -79,7 +79,7 @@ export default function StatsPage() {
                 label={{
                   value: "Time of day",
                   position: "insideBottom",
-                  offset: -5,
+                  offset: 0,
                 }}
               />
               <YAxis
