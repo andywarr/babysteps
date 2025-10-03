@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 
+import { db } from "@/lib/db";
 import { useEvents } from "@/components/ui/events-provider";
 import { useToast } from "@/components/ui/toast-provider";
 
@@ -17,6 +18,7 @@ export default function SettingsPage() {
   });
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member" | "viewer">("member");
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
 
   const submitProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,6 +36,37 @@ export default function SettingsPage() {
     await inviteCaregiver({ email, role });
     setEmail("");
     setRole("member");
+  };
+
+  const handleClearAllData = async () => {
+    try {
+      // Clear all IndexedDB tables
+      await db.events.clear();
+      await db.timers.clear();
+      await db.outbox.clear();
+      await db.invites.clear();
+
+      // Clear localStorage
+      window.localStorage.removeItem("babysteps:baby");
+
+      pushToast({
+        title: "All data cleared",
+        description: "Your local data has been deleted. The page will reload.",
+        level: "success",
+      });
+
+      // Reload the page after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      pushToast({
+        title: "Error clearing data",
+        description:
+          "There was a problem clearing your data. Please try again.",
+        level: "error",
+      });
+    }
   };
 
   return (
@@ -111,6 +144,43 @@ export default function SettingsPage() {
             </button>
           </div>
         </form>
+      </section>
+
+      <section className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm dark:border-red-900/50 dark:bg-slate-900">
+        <h2 className="text-lg font-semibold text-red-900 dark:text-red-400">
+          Reset
+        </h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          Permanently delete all local data including events, timers, and
+          settings. This action cannot be undone.
+        </p>
+
+        {!showClearConfirmation ? (
+          <button
+            onClick={() => setShowClearConfirmation(true)}
+            className="mt-4 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-800 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-950/30"
+          >
+            Clear all data
+          </button>
+        ) : (
+          <div className="mt-4 flex items-center gap-3">
+            <p className="text-sm font-medium text-red-900 dark:text-red-400">
+              Are you sure? This cannot be undone.
+            </p>
+            <button
+              onClick={handleClearAllData}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              Yes, delete everything
+            </button>
+            <button
+              onClick={() => setShowClearConfirmation(false)}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Caregiver invites section - hidden for now */}
