@@ -74,7 +74,6 @@ export default function StatsPage() {
         <div className="mt-4 h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 type="number"
                 dataKey="hour"
