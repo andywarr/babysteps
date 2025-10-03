@@ -230,7 +230,7 @@ export default function HomePage() {
     { type: "sleep", label: sleepTimer ? "End Sleep" : "Sleep", emoji: "😴" },
     { type: "nursing", label: "Nursing", emoji: "🤱" },
     { type: "pumping", label: "Pumping", emoji: "🫙" },
-    { type: "misc", label: "Misc", emoji: "📝" },
+    { type: "misc", label: "Log", emoji: "📝" },
   ];
 
   return (
