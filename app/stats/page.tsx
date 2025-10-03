@@ -72,52 +72,65 @@ export default function StatsPage() {
           day.
         </p>
         <div className="mt-4 h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-              <XAxis
-                type="number"
-                dataKey="hour"
-                domain={[0, 24]}
-                ticks={[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]}
-                tickFormatter={(value) => {
-                  const hour =
-                    value === 0 ? 12 : value > 12 ? value - 12 : value;
-                  const period = value < 12 ? "a" : "p";
-                  return `${hour}${period}`;
-                }}
-                stroke="currentColor"
-                axisLine={false}
-                tickLine={false}
-                label={{
-                  value: "Time of day",
-                  position: "insideBottom",
-                  offset: -10,
-                }}
-              />
-              <YAxis
-                type="category"
-                dataKey="day"
-                stroke="currentColor"
-                width={60}
-                axisLine={false}
-                tickLine={false}
-                allowDuplicatedCategory={false}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                wrapperClassName="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm shadow-lg"
-              />
-              <Scatter
-                data={data.flattenedEvents}
-                shape="circle"
-                fill="#8884d8"
+          {data.flattenedEvents.length === 0 ? (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-slate-400 dark:text-slate-500">
+                No data to display
+              </p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart
+                margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
               >
-                {data.flattenedEvents.map((event, index) => (
-                  <Cell key={`cell-${index}`} fill={EVENT_COLORS[event.type]} />
-                ))}
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
+                <XAxis
+                  type="number"
+                  dataKey="hour"
+                  domain={[0, 24]}
+                  ticks={[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]}
+                  tickFormatter={(value) => {
+                    const hour =
+                      value === 0 ? 12 : value > 12 ? value - 12 : value;
+                    const period = value < 12 ? "a" : "p";
+                    return `${hour}${period}`;
+                  }}
+                  stroke="currentColor"
+                  axisLine={false}
+                  tickLine={false}
+                  label={{
+                    value: "Time of day",
+                    position: "insideBottom",
+                    offset: -10,
+                  }}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="day"
+                  stroke="currentColor"
+                  width={60}
+                  axisLine={false}
+                  tickLine={false}
+                  allowDuplicatedCategory={false}
+                />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  wrapperClassName="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm shadow-lg"
+                />
+                <Scatter
+                  data={data.flattenedEvents}
+                  shape="circle"
+                  fill="#8884d8"
+                >
+                  {data.flattenedEvents.map((event, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={EVENT_COLORS[event.type]}
+                    />
+                  ))}
+                </Scatter>
+              </ScatterChart>
+            </ResponsiveContainer>
+          )}
         </div>
         <div className="mt-4 flex flex-wrap gap-3 text-xs">
           <div className="flex items-center gap-1.5">
