@@ -113,6 +113,8 @@ export default function SettingsPage() {
         </form>
       </section>
 
+      {/* Caregiver invites section - hidden for now */}
+      {/* 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -176,6 +178,7 @@ export default function SettingsPage() {
           ) : null}
         </ul>
       </section>
+      */}
     </div>
   );
 }
