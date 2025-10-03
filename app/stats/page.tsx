@@ -324,23 +324,8 @@ function buildStats(events: BabyEvent[]): ComputedStats {
     })
     .reverse();
 
-  // Flatten events and ensure all days are represented
-  const allDayLabels = timelineData.map((d) => d.day);
-  const flattenedEvents = timelineData.flatMap((dayData) => {
-    // If a day has no events, add a hidden placeholder to ensure the category exists
-    if (dayData.events.length === 0) {
-      return [
-        {
-          type: "other" as EventType,
-          hour: -1, // Place it off the chart
-          day: dayData.day,
-          time: "",
-          details: undefined,
-        },
-      ];
-    }
-    return dayData.events;
-  });
+  // Flatten events - only include actual events, no placeholders
+  const flattenedEvents = timelineData.flatMap((dayData) => dayData.events);
 
   return {
     timeSinceFeed,
