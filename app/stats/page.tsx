@@ -68,18 +68,27 @@ export default function StatsPage() {
         <div className="mt-4 h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
               <XAxis
                 type="number"
                 dataKey="hour"
                 domain={[0, 24]}
-                ticks={[0, 4, 8, 12, 16, 20, 24]}
-                tickFormatter={(value) => `${value}:00`}
+                ticks={[
+                  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                  18, 19, 20, 21, 22, 23,
+                ]}
+                tickFormatter={(value) => {
+                  const hour =
+                    value === 0 ? 12 : value > 12 ? value - 12 : value;
+                  const period = value < 12 ? "a" : "p";
+                  return `${hour}${period}`;
+                }}
                 stroke="currentColor"
+                axisLine={false}
+                tickLine={false}
                 label={{
                   value: "Time of day",
                   position: "insideBottom",
-                  offset: 0,
+                  offset: -10,
                 }}
               />
               <YAxis
@@ -87,6 +96,8 @@ export default function StatsPage() {
                 dataKey="day"
                 stroke="currentColor"
                 width={60}
+                axisLine={false}
+                tickLine={false}
               />
               <Tooltip
                 content={<CustomTooltip />}
