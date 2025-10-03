@@ -18,7 +18,7 @@ import {
 } from "recharts";
 
 import { useEvents } from "@/components/ui/events-provider";
-import type { BabyEvent, EventType } from "@/lib/types/events";
+import type { BabyEvent, EventType, FeedEvent } from "@/lib/types/events";
 
 const EVENT_COLORS: Record<EventType | "other", string> = {
   feed: "#4d71ff",
@@ -226,7 +226,7 @@ type ComputedStats = {
 
 function buildStats(events: BabyEvent[]): ComputedStats {
   const now = dayjs();
-  const lastFeed = events.find((event) => event.type === "feed");
+  const lastFeed = events.find((event): event is FeedEvent => event.type === "feed");
   const timeSinceFeed = lastFeed
     ? now.to(lastFeed.timestamp, true) + " ago"
     : "—";
