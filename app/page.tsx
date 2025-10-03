@@ -260,7 +260,7 @@ export default function HomePage() {
               const buttonContent = (
                 <button
                   key={action.type}
-                  className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center justify-between ${
+                  className={`rounded-xl p-4 transition focus-visible:ring-2 w-full aspect-square flex flex-col items-center relative ${
                     isActive && isVolumeTrackedAction
                       ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
                       : isActive
@@ -269,13 +269,16 @@ export default function HomePage() {
                   }`}
                   onClick={() => handleQuickAction(action.type)}
                 >
-                  <div className="flex flex-col items-center gap-2">
+                  {/* Emoji and label at 1/3 down */}
+                  <div className="absolute top-[33.33%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
                     <span className="text-5xl">{action.emoji}</span>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 text-center whitespace-nowrap">
                       {action.label}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 w-full justify-center h-6">
+
+                  {/* Secondary content at 75% down */}
+                  <div className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
                     {volumeDisplay && (
                       <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
                         {volumeDisplay}
@@ -293,8 +296,6 @@ export default function HomePage() {
                         min
                       </span>
                     )}
-                  </div>
-                  <div className="h-5 flex items-center justify-center">
                     {action.type !== "misc" &&
                     lastEventByAction[action.type] &&
                     !isActive ? (
