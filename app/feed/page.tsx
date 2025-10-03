@@ -16,7 +16,7 @@ const filters: { value: EventType | "all"; label: string }[] = [
   { value: "pump", label: "Pumps" },
   { value: "med", label: "Meds" },
   { value: "note", label: "Notes" },
-  { value: "misc", label: "Misc" },
+  { value: "misc", label: "Log" },
 ];
 
 export default function HistoryPage() {
