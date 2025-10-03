@@ -21,7 +21,7 @@ export function QuickStats({ events }: QuickStatsProps) {
     <div className="grid gap-3 sm:grid-cols-3">
       <StatPill
         title="Last feed"
-        value={stats.lastFeed ?? "–"}
+        value={stats.lastFeed ?? "No activity"}
         helper={stats.lastFeedDetail}
       />
       <StatPill
