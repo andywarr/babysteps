@@ -193,22 +193,32 @@ export function EventsProvider({ children }: PropsWithChildren) {
         ...(metadata ?? {}),
       } as Record<string, unknown>;
       await db.timers.delete(timerId);
-      const payload: Partial<BabyEvent> = {
-        type: eventType,
-        timestamp: endedAt.toISOString(),
-        note:
-          typeof timerMetadata.note === "string"
-            ? (timerMetadata.note as string)
-            : undefined,
-        durationMinutes,
-      };
+      
       if (eventType === "feed") {
-        payload.method = (timerMetadata.method as any) ?? "breast";
-        payload.side = timerMetadata.side as any;
+        const feedPayload: Partial<BabyEvent> & { type: "feed"; timestamp: string } = {
+          type: "feed",
+          timestamp: endedAt.toISOString(),
+          note:
+            typeof timerMetadata.note === "string"
+              ? (timerMetadata.note as string)
+              : undefined,
+          durationMinutes,
+          method: (timerMetadata.method as any) ?? "breast",
+          side: timerMetadata.side as any,
+        };
+        await logEvent(feedPayload);
+      } else {
+        const sleepPayload: Partial<BabyEvent> & { type: "sleep"; timestamp: string } = {
+          type: "sleep",
+          timestamp: endedAt.toISOString(),
+          note:
+            typeof timerMetadata.note === "string"
+              ? (timerMetadata.note as string)
+              : undefined,
+          durationMinutes,
+        };
+        await logEvent(sleepPayload);
       }
-      await logEvent(
-        payload as Partial<BabyEvent> & { type: EventType; timestamp: string }
-      );
     },
     [logEvent]
   );
@@ -342,7 +352,5 @@ function formatEventType(input: BabyEvent | EventType | TimerType): string {
       return "Note";
     case "misc":
       return "Misc";
-    default:
-      return input.type;
   }
 }

@@ -226,7 +226,9 @@ type ComputedStats = {
 
 function buildStats(events: BabyEvent[]): ComputedStats {
   const now = dayjs();
-  const lastFeed = events.find((event): event is FeedEvent => event.type === "feed");
+  const lastFeed = events.find(
+    (event): event is FeedEvent => event.type === "feed"
+  );
   const timeSinceFeed = lastFeed
     ? now.to(lastFeed.timestamp, true) + " ago"
     : "—";
