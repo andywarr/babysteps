@@ -300,6 +300,7 @@ export default function HomePage() {
                   lastEventByAction[action.type] &&
                   !isActive ? (
                     <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Last:{" "}
                       {new Date(
                         lastEventByAction[action.type]!
                       ).toLocaleTimeString([], {
