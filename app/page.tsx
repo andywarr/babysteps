@@ -234,7 +234,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
+    <div className="flex min-h-[calc(100vh-8rem)] items-start justify-center">
       <div className="w-full max-w-4xl space-y-8">
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
