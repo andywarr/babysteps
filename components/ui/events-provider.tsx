@@ -193,9 +193,12 @@ export function EventsProvider({ children }: PropsWithChildren) {
         ...(metadata ?? {}),
       } as Record<string, unknown>;
       await db.timers.delete(timerId);
-      
+
       if (eventType === "feed") {
-        const feedPayload: Partial<BabyEvent> & { type: "feed"; timestamp: string } = {
+        const feedPayload: Partial<BabyEvent> & {
+          type: "feed";
+          timestamp: string;
+        } = {
           type: "feed",
           timestamp: endedAt.toISOString(),
           note:
@@ -208,7 +211,10 @@ export function EventsProvider({ children }: PropsWithChildren) {
         };
         await logEvent(feedPayload);
       } else {
-        const sleepPayload: Partial<BabyEvent> & { type: "sleep"; timestamp: string } = {
+        const sleepPayload: Partial<BabyEvent> & {
+          type: "sleep";
+          timestamp: string;
+        } = {
           type: "sleep",
           timestamp: endedAt.toISOString(),
           note:
