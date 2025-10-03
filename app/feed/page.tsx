@@ -68,11 +68,13 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Type
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              Type
+            </span>
             <select
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="h-[38px] w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               value={filterType}
               onChange={(event) =>
                 setFilterType(event.target.value as EventType | "all")
@@ -85,11 +87,13 @@ export default function HistoryPage() {
               ))}
             </select>
           </label>
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Date
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              Date
+            </span>
             <input
               type="date"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="h-[38px] w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               value={dateFilter}
               onChange={(event) => setDateFilter(event.target.value)}
             />
@@ -98,7 +102,7 @@ export default function HistoryPage() {
             onClick={exportCsv}
             className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
           >
-            Export CSV
+            Export
           </button>
         </div>
       </div>
