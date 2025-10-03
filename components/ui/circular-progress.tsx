@@ -87,10 +87,11 @@ export function CircularProgress({
 
   return (
     <div className="relative" ref={containerRef}>
+      {children}
       {isActive && (
         <svg
           key={startTime}
-          className="absolute inset-0 pointer-events-none animate-in fade-in duration-200"
+          className="absolute inset-0 z-10 pointer-events-none animate-in fade-in duration-200"
           style={{
             width: "100%",
             height: "100%",
@@ -107,7 +108,7 @@ export function CircularProgress({
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-brand-500 dark:text-brand-400"
+            className="text-brand-600 dark:text-brand-400"
             strokeDasharray="1"
             strokeDashoffset={progress / 100}
             pathLength="1"
@@ -118,7 +119,6 @@ export function CircularProgress({
           />
         </svg>
       )}
-      {children}
     </div>
   );
 }
