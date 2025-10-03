@@ -265,7 +265,7 @@ export default function HomePage() {
                       ? "border-2 border-transparent bg-brand-50 dark:bg-brand-900/20"
                       : isActive
                       ? "border border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20"
-                      : "border border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-300"
+                      : "border border-slate-200 bg-slate-50 hover:border-brand-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-600 dark:hover:bg-slate-700"
                   }`}
                   onClick={() => handleQuickAction(action.type)}
                 >
