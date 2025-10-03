@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { EventsProvider } from "@/components/ui/events-provider";
 import { WakeLockProvider } from "@/components/ui/wake-lock-provider";
+import { DimOverlay } from "@/components/ui/dim-overlay";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import Image from "next/image";
 
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
                 </main>
                 <BottomNav />
               </div>
+              <DimOverlay />
             </EventsProvider>
           </ToastProvider>
         </WakeLockProvider>
