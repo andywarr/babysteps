@@ -244,7 +244,7 @@ function buildStats(events: BabyEvent[]): ComputedStats {
   );
   const timeSinceFeed = lastFeed
     ? now.to(lastFeed.timestamp, true) + " ago"
-    : "—";
+    : "No feedings yet";
   const lastFeedDetail = lastFeed
     ? `${lastFeed.method ?? ""} ${
         lastFeed.method === "solid" && lastFeed.amountTsp
