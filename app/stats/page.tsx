@@ -6,10 +6,30 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
 
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  ResponsiveContainer,
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Cell,
+} from "recharts";
 
 import { useEvents } from "@/components/ui/events-provider";
-import type { BabyEvent } from "@/lib/types/events";
+import type { BabyEvent, EventType } from "@/lib/types/events";
+
+const EVENT_COLORS: Record<EventType | "other", string> = {
+  feed: "#4d71ff",
+  diaper: "#f97316",
+  sleep: "#0ea5e9",
+  pump: "#8b5cf6",
+  med: "#ec4899",
+  note: "#10b981",
+  misc: "#64748b",
+  other: "#94a3b8",
+};
 
 export default function StatsPage() {
   const { events } = useEvents();
@@ -18,38 +38,133 @@ export default function StatsPage() {
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Insights</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+          Insights
+        </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-          Keep an eye on feeding cadence, diaper changes, and sleep totals at a glance.
+          Keep an eye on feeding cadence, diaper changes, and sleep totals at a
+          glance.
         </p>
         <dl className="mt-6 grid gap-4 sm:grid-cols-3">
-          <Stat label="Time since feed" value={data.timeSinceFeed} helper={data.lastFeedDetail} />
-          <Stat label="Feeds / 24h" value={String(data.feedCount24h)} helper={`${data.feedCount7d} in 7d`} />
-          <Stat label="Sleep / 24h" value={`${data.sleepMinutes24h} min`} helper={`${data.sleepMinutes7d} min in 7d`} />
+          <Stat
+            label="Time since feed"
+            value={data.timeSinceFeed}
+            helper={data.lastFeedDetail}
+          />
+          <Stat
+            label="Feeds / 24h"
+            value={String(data.feedCount24h)}
+            helper={`${data.feedCount7d} in 7d`}
+          />
+          <Stat
+            label="Sleep / 24h"
+            value={`${data.sleepMinutes24h} min`}
+            helper={`${data.sleepMinutes7d} min in 7d`}
+          />
         </dl>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Last 7 days</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300">Daily totals across feeds, diapers, and sleep minutes.</p>
-        <div className="mt-4 h-80 w-full">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          Last 7 days
+        </h2>
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          Daily activity timeline showing when events occurred throughout the
+          day.
+        </p>
+        <div className="mt-4 h-96 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.dailySeries}>
+            <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-              <XAxis dataKey="day" stroke="currentColor" />
-              <YAxis yAxisId="left" orientation="left" stroke="currentColor" allowDecimals={false} />
-              <YAxis yAxisId="right" orientation="right" stroke="currentColor" allowDecimals={false} />
-              <Tooltip wrapperClassName="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm shadow-lg" />
-              <Legend />
-              <Bar yAxisId="left" dataKey="feeds" fill="#4d71ff" name="Feeds" radius={[6, 6, 0, 0]} />
-              <Bar yAxisId="left" dataKey="diapers" fill="#f97316" name="Diapers" radius={[6, 6, 0, 0]} />
-              <Bar yAxisId="right" dataKey="sleep" fill="#0ea5e9" name="Sleep (min)" radius={[6, 6, 0, 0]} />
-            </BarChart>
+              <XAxis
+                type="number"
+                dataKey="hour"
+                domain={[0, 24]}
+                ticks={[0, 4, 8, 12, 16, 20, 24]}
+                tickFormatter={(value) => `${value}:00`}
+                stroke="currentColor"
+                label={{
+                  value: "Time of day",
+                  position: "insideBottom",
+                  offset: -5,
+                }}
+              />
+              <YAxis
+                type="category"
+                dataKey="day"
+                stroke="currentColor"
+                width={60}
+              />
+              <Tooltip
+                content={<CustomTooltip />}
+                wrapperClassName="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm shadow-lg"
+              />
+              {data.timelineData.map((dayData, dayIndex) => (
+                <Scatter key={dayData.day} data={dayData.events} shape="circle">
+                  {dayData.events.map((event, index) => (
+                    <Cell
+                      key={`cell-${dayIndex}-${index}`}
+                      fill={EVENT_COLORS[event.type]}
+                    />
+                  ))}
+                </Scatter>
+              ))}
+            </ScatterChart>
           </ResponsiveContainer>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3 text-xs">
+          <div className="flex items-center gap-1.5">
+            <div
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: EVENT_COLORS.feed }}
+            />
+            <span className="text-slate-600 dark:text-slate-300">Feed</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: EVENT_COLORS.diaper }}
+            />
+            <span className="text-slate-600 dark:text-slate-300">Diaper</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: EVENT_COLORS.sleep }}
+            />
+            <span className="text-slate-600 dark:text-slate-300">Sleep</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: EVENT_COLORS.other }}
+            />
+            <span className="text-slate-600 dark:text-slate-300">Other</span>
+          </div>
         </div>
       </section>
     </div>
   );
+}
+
+function CustomTooltip({ active, payload }: any) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-800">
+        <p className="font-semibold text-slate-900 dark:text-slate-100">
+          {data.type.charAt(0).toUpperCase() + data.type.slice(1)}
+        </p>
+        <p className="text-slate-600 dark:text-slate-300">{data.time}</p>
+        {data.details && (
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {data.details}
+          </p>
+        )}
+      </div>
+    );
+  }
+  return null;
 }
 
 type StatProps = {
@@ -61,9 +176,17 @@ type StatProps = {
 function Stat({ label, value, helper }: StatProps) {
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</dt>
-      <dd className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-50">{value}</dd>
-      {helper ? <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">{helper}</p> : null}
+      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {label}
+      </dt>
+      <dd className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-50">
+        {value}
+      </dd>
+      {helper ? (
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
+          {helper}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -75,43 +198,104 @@ type ComputedStats = {
   feedCount7d: number;
   sleepMinutes24h: number;
   sleepMinutes7d: number;
-  dailySeries: { day: string; feeds: number; diapers: number; sleep: number }[];
+  timelineData: Array<{
+    day: string;
+    events: Array<{
+      type: EventType;
+      hour: number;
+      day: string;
+      time: string;
+      details?: string;
+    }>;
+  }>;
 };
 
 function buildStats(events: BabyEvent[]): ComputedStats {
   const now = dayjs();
   const lastFeed = events.find((event) => event.type === "feed");
-  const timeSinceFeed = lastFeed ? now.to(lastFeed.timestamp, true) + " ago" : "—";
-  const lastFeedDetail = lastFeed ? `${lastFeed.method ?? ""} ${lastFeed.amountOz ? `• ${lastFeed.amountOz} oz` : ""}`.trim() : undefined;
+  const timeSinceFeed = lastFeed
+    ? now.to(lastFeed.timestamp, true) + " ago"
+    : "—";
+  const lastFeedDetail = lastFeed
+    ? `${lastFeed.method ?? ""} ${
+        lastFeed.amountOz ? `• ${lastFeed.amountOz} oz` : ""
+      }`.trim()
+    : undefined;
 
   const since24h = now.subtract(24, "hour");
   const since7d = now.subtract(7, "day");
 
-  const feedCount24h = events.filter((event) => event.type === "feed" && dayjs(event.timestamp).isAfter(since24h)).length;
-  const feedCount7d = events.filter((event) => event.type === "feed" && dayjs(event.timestamp).isAfter(since7d)).length;
+  const feedCount24h = events.filter(
+    (event) => event.type === "feed" && dayjs(event.timestamp).isAfter(since24h)
+  ).length;
+  const feedCount7d = events.filter(
+    (event) => event.type === "feed" && dayjs(event.timestamp).isAfter(since7d)
+  ).length;
 
   const sleepMinutes24h = Math.round(
     events
-      .filter((event) => event.type === "sleep" && dayjs(event.timestamp).isAfter(since24h))
-      .reduce((total, event) => total + (event.durationMinutes ?? 0), 0)
+      .filter(
+        (event) =>
+          event.type === "sleep" && dayjs(event.timestamp).isAfter(since24h)
+      )
+      .reduce(
+        (total, event) => total + ((event as any).durationMinutes ?? 0),
+        0
+      )
   );
   const sleepMinutes7d = Math.round(
     events
-      .filter((event) => event.type === "sleep" && dayjs(event.timestamp).isAfter(since7d))
-      .reduce((total, event) => total + (event.durationMinutes ?? 0), 0)
+      .filter(
+        (event) =>
+          event.type === "sleep" && dayjs(event.timestamp).isAfter(since7d)
+      )
+      .reduce(
+        (total, event) => total + ((event as any).durationMinutes ?? 0),
+        0
+      )
   );
 
-  const days = Array.from({ length: 7 }).map((_, index) => now.subtract(index, "day"));
-  const dailySeries = days
+  const days = Array.from({ length: 7 }).map((_, index) =>
+    now.subtract(index, "day")
+  );
+
+  const timelineData = days
     .map((day) => {
-      const dayEvents = events.filter((event) => dayjs(event.timestamp).isSame(day, "day"));
+      const dayEvents = events.filter((event) =>
+        dayjs(event.timestamp).isSame(day, "day")
+      );
+      const dayLabel = day.format("MM/DD");
+
       return {
-        day: day.format("ddd"),
-        feeds: dayEvents.filter((event) => event.type === "feed").length,
-        diapers: dayEvents.filter((event) => event.type === "diaper").length,
-        sleep: Math.round(
-          dayEvents.filter((event) => event.type === "sleep").reduce((total, event) => total + (event.durationMinutes ?? 0), 0)
-        )
+        day: dayLabel,
+        events: dayEvents.map((event) => {
+          const eventTime = dayjs(event.timestamp);
+          const hour = eventTime.hour() + eventTime.minute() / 60;
+
+          let details = "";
+          if (event.type === "feed") {
+            const feedEvent = event as any;
+            details = `${feedEvent.method ?? ""} ${
+              feedEvent.amountOz ? `• ${feedEvent.amountOz} oz` : ""
+            }`.trim();
+          } else if (event.type === "sleep") {
+            const sleepEvent = event as any;
+            details = sleepEvent.durationMinutes
+              ? `${sleepEvent.durationMinutes} min`
+              : "";
+          } else if (event.type === "diaper") {
+            const diaperEvent = event as any;
+            details = diaperEvent.diaperType ?? "";
+          }
+
+          return {
+            type: event.type,
+            hour,
+            day: dayLabel,
+            time: eventTime.format("h:mm A"),
+            details: details || undefined,
+          };
+        }),
       };
     })
     .reverse();
@@ -123,6 +307,6 @@ function buildStats(events: BabyEvent[]): ComputedStats {
     feedCount7d,
     sleepMinutes24h,
     sleepMinutes7d,
-    dailySeries
+    timelineData,
   };
 }
