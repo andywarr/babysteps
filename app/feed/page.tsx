@@ -171,12 +171,26 @@ function groupEvents(events: BabyEvent[]): [string, BabyEvent[]][] {
     .map(([_, value]) => [value.label, value.items]);
 }
 
-function formatEventLabel(event: BabyEvent) {
+function formatEventLabel(event: BabyEvent): string {
   switch (event.type) {
-    case "feed":
-      return `${capitalize(event.method ?? "Feed")} • ${
-        event.durationMinutes ?? "–"
-      } min`;
+    case "feed": {
+      const method = capitalize(event.method ?? "Feed");
+      // For bottle/formula feeds, show amount in oz if available, otherwise duration
+      if (event.method === "bottle" || event.method === "formula") {
+        if (event.amountOz) {
+          return `${method} • ${event.amountOz} oz`;
+        } else if (event.durationMinutes) {
+          return `${method} • ${event.durationMinutes} min`;
+        } else {
+          return method;
+        }
+      }
+      // For breast/solid feeds, show duration if available
+      if (event.durationMinutes) {
+        return `${method} • ${event.durationMinutes} min`;
+      }
+      return method;
+    }
     case "diaper":
       return `${capitalize(event.diaperType)} diaper`;
     case "sleep":
@@ -189,8 +203,6 @@ function formatEventLabel(event: BabyEvent) {
       return event.title ?? "Note";
     case "misc":
       return event.description || "Misc event";
-    default:
-      return event.type;
   }
 }
 
