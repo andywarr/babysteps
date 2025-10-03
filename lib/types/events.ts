@@ -28,6 +28,7 @@ export interface FeedEvent extends BaseEvent {
   side?: "left" | "right" | "both";
   durationMinutes?: number;
   amountOz?: number;
+  amountTsp?: number;
 }
 
 export interface DiaperEvent extends BaseEvent {

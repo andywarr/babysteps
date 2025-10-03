@@ -185,7 +185,17 @@ function formatEventLabel(event: BabyEvent): string {
           return method;
         }
       }
-      // For breast/solid feeds, show duration if available
+      // For solid feeds, show amount in tsp if available
+      if (event.method === "solid") {
+        if (event.amountTsp) {
+          return `${method} • ${event.amountTsp} tsp`;
+        } else if (event.durationMinutes) {
+          return `${method} • ${event.durationMinutes} min`;
+        } else {
+          return method;
+        }
+      }
+      // For breast feeds, show duration if available
       if (event.durationMinutes) {
         return `${method} • ${event.durationMinutes} min`;
       }

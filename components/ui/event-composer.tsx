@@ -34,6 +34,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
     method: "breast",
     side: "left",
     amountOz: 0,
+    amountTsp: 0,
   });
   const [diaperField, setDiaperField] = useState("wet");
   const [sleepDuration, setSleepDuration] = useState(30);
@@ -54,6 +55,7 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
       method: "breast",
       side: "left",
       amountOz: 0,
+      amountTsp: 0,
     });
     setDiaperField("wet");
     setSleepDuration(30);
@@ -99,7 +101,14 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
           note,
           method: feedFields.method as any,
           side: feedFields.side as any,
-          amountOz: feedFields.amountOz || undefined,
+          amountOz:
+            feedFields.method !== "solid"
+              ? feedFields.amountOz || undefined
+              : undefined,
+          amountTsp:
+            feedFields.method === "solid"
+              ? feedFields.amountTsp || undefined
+              : undefined,
         });
         break;
       case "diaper":
@@ -248,17 +257,23 @@ export function EventComposer({ activeType, onClose }: EventComposerProps) {
               </select>
             </label>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Amount (oz)
+              {feedFields.method === "solid" ? "Amount (tsp)" : "Amount (oz)"}
               <input
                 type="number"
                 min={0}
-                step="0.5"
+                step={feedFields.method === "solid" ? "1" : "0.5"}
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-                value={feedFields.amountOz}
+                value={
+                  feedFields.method === "solid"
+                    ? feedFields.amountTsp
+                    : feedFields.amountOz
+                }
                 onChange={(event) =>
                   setFeedFields((current) => ({
                     ...current,
-                    amountOz: Number(event.target.value),
+                    ...(feedFields.method === "solid"
+                      ? { amountTsp: Number(event.target.value) }
+                      : { amountOz: Number(event.target.value) }),
                   }))
                 }
               />

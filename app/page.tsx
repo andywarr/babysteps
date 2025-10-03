@@ -18,6 +18,7 @@ type QuickActionType =
 type VolumeTracker = {
   type: QuickActionType;
   amountOz: number;
+  amountTsp: number;
   startTime: number;
   timeoutId: NodeJS.Timeout;
 };
@@ -98,7 +99,7 @@ export default function HomePage() {
         await logEvent({
           type: "feed",
           method: "solid",
-          amountOz: tracker.amountOz,
+          amountTsp: tracker.amountTsp,
         });
       } else if (tracker.type === "pumping") {
         await logEvent({
@@ -133,7 +134,14 @@ export default function HomePage() {
           if (timeSinceStart < VOLUME_TRACKING_DURATION) {
             // Increment volume and reset timeout with new startTime to restart animation
             clearTimeout(currentTracker.timeoutId);
-            const newAmount = currentTracker.amountOz + 1;
+            const newAmountOz =
+              action === "food"
+                ? currentTracker.amountOz
+                : currentTracker.amountOz + 1;
+            const newAmountTsp =
+              action === "food"
+                ? currentTracker.amountTsp + 1
+                : currentTracker.amountTsp;
             const timeoutId = setTimeout(() => {
               if (volumeTrackerRef.current) {
                 finalizeVolumeTracking(volumeTrackerRef.current);
@@ -142,7 +150,8 @@ export default function HomePage() {
 
             setVolumeTracker({
               type: action,
-              amountOz: newAmount,
+              amountOz: newAmountOz,
+              amountTsp: newAmountTsp,
               startTime: now, // Reset startTime to restart animation
               timeoutId,
             });
@@ -165,7 +174,8 @@ export default function HomePage() {
 
         setVolumeTracker({
           type: action,
-          amountOz: 1,
+          amountOz: action === "food" ? 0 : 1,
+          amountTsp: action === "food" ? 1 : 0,
           startTime: now,
           timeoutId,
         });
@@ -258,7 +268,9 @@ export default function HomePage() {
               (volumeTracker && volumeTracker.type === action.type);
             const volumeDisplay =
               volumeTracker && volumeTracker.type === action.type
-                ? `${volumeTracker.amountOz}oz`
+                ? action.type === "food"
+                  ? `${volumeTracker.amountTsp}tsp`
+                  : `${volumeTracker.amountOz}oz`
                 : null;
 
             // Determine if this action type supports volume tracking (shows countdown)

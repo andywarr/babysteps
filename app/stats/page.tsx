@@ -232,7 +232,11 @@ function buildStats(events: BabyEvent[]): ComputedStats {
     : "—";
   const lastFeedDetail = lastFeed
     ? `${lastFeed.method ?? ""} ${
-        lastFeed.amountOz ? `• ${lastFeed.amountOz} oz` : ""
+        lastFeed.method === "solid" && lastFeed.amountTsp
+          ? `• ${lastFeed.amountTsp} tsp`
+          : lastFeed.amountOz
+          ? `• ${lastFeed.amountOz} oz`
+          : ""
       }`.trim()
     : undefined;
 
@@ -290,7 +294,11 @@ function buildStats(events: BabyEvent[]): ComputedStats {
           if (event.type === "feed") {
             const feedEvent = event as any;
             details = `${feedEvent.method ?? ""} ${
-              feedEvent.amountOz ? `• ${feedEvent.amountOz} oz` : ""
+              feedEvent.method === "solid" && feedEvent.amountTsp
+                ? `• ${feedEvent.amountTsp} tsp`
+                : feedEvent.amountOz
+                ? `• ${feedEvent.amountOz} oz`
+                : ""
             }`.trim();
           } else if (event.type === "sleep") {
             const sleepEvent = event as any;
