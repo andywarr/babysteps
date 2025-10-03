@@ -35,6 +35,12 @@ export default function StatsPage() {
   const { events } = useEvents();
   const data = useMemo(() => buildStats(events), [events]);
 
+  // Debug logging
+  console.log("Total events:", events.length);
+  console.log("Flattened events for chart:", data.flattenedEvents.length);
+  console.log("Timeline data:", data.timelineData);
+  console.log("Sample flattened events:", data.flattenedEvents.slice(0, 5));
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
@@ -68,6 +74,7 @@ export default function StatsPage() {
         <div className="mt-4 h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 type="number"
                 dataKey="hour"
@@ -98,21 +105,21 @@ export default function StatsPage() {
                 width={60}
                 axisLine={false}
                 tickLine={false}
+                allowDuplicatedCategory={false}
               />
               <Tooltip
                 content={<CustomTooltip />}
                 wrapperClassName="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm shadow-lg"
               />
-              {data.timelineData.map((dayData, dayIndex) => (
-                <Scatter key={dayData.day} data={dayData.events} shape="circle">
-                  {dayData.events.map((event, index) => (
-                    <Cell
-                      key={`cell-${dayIndex}-${index}`}
-                      fill={EVENT_COLORS[event.type]}
-                    />
-                  ))}
-                </Scatter>
-              ))}
+              <Scatter
+                data={data.flattenedEvents}
+                shape="circle"
+                fill="#8884d8"
+              >
+                {data.flattenedEvents.map((event, index) => (
+                  <Cell key={`cell-${index}`} fill={EVENT_COLORS[event.type]} />
+                ))}
+              </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
         </div>
@@ -212,6 +219,13 @@ type ComputedStats = {
       details?: string;
     }>;
   }>;
+  flattenedEvents: Array<{
+    type: EventType;
+    hour: number;
+    day: string;
+    time: string;
+    details?: string;
+  }>;
 };
 
 function buildStats(events: BabyEvent[]): ComputedStats {
@@ -304,6 +318,24 @@ function buildStats(events: BabyEvent[]): ComputedStats {
     })
     .reverse();
 
+  // Flatten events and ensure all days are represented
+  const allDayLabels = timelineData.map((d) => d.day);
+  const flattenedEvents = timelineData.flatMap((dayData) => {
+    // If a day has no events, add a hidden placeholder to ensure the category exists
+    if (dayData.events.length === 0) {
+      return [
+        {
+          type: "other" as EventType,
+          hour: -1, // Place it off the chart
+          day: dayData.day,
+          time: "",
+          details: undefined,
+        },
+      ];
+    }
+    return dayData.events;
+  });
+
   return {
     timeSinceFeed,
     lastFeedDetail,
@@ -312,5 +344,6 @@ function buildStats(events: BabyEvent[]): ComputedStats {
     sleepMinutes24h,
     sleepMinutes7d,
     timelineData,
+    flattenedEvents,
   };
 }
