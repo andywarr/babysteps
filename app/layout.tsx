@@ -15,7 +15,17 @@ export const metadata: Metadata = {
   title: "Babysteps",
   description:
     "Offline-friendly baby care tracker for logging feeds, diapers, sleep, pumps, meds, and notes.",
-  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
+  },
+  appleWebApp: {
+    title: "Babysteps",
+  },
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
