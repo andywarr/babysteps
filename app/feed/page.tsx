@@ -68,15 +68,6 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            Feed
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            A reverse chronological feed of all events. Filter by type or date,
-            or export a CSV for your pediatrician.
-          </p>
-        </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Type
