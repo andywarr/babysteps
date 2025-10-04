@@ -13,7 +13,8 @@ type QuickActionType =
   | "dirty"
   | "sleep"
   | "nursing"
-  | "pumping";
+  | "pumping"
+  | "misc";
 
 type VolumeTracker = {
   type: QuickActionType;
@@ -79,6 +80,8 @@ export default function HomePage() {
         result.sleep = event.timestamp;
       } else if (event.type === "pump" && !result.pumping) {
         result.pumping = event.timestamp;
+      } else if (event.type === "misc" && !result.misc) {
+        result.misc = event.timestamp;
       }
     }
     return result;
@@ -114,7 +117,7 @@ export default function HomePage() {
   );
 
   const handleQuickAction = useCallback(
-    async (action: QuickActionType | "misc") => {
+    async (action: QuickActionType) => {
       // Handle misc event (opens composer)
       if (action === "misc") {
         openComposer("misc");
@@ -235,7 +238,7 @@ export default function HomePage() {
   );
 
   const quickActions: {
-    type: QuickActionType | "misc";
+    type: QuickActionType;
     label: string;
     emoji: string;
   }[] = [
@@ -330,9 +333,7 @@ export default function HomePage() {
                       min
                     </span>
                   )}
-                  {action.type !== "misc" &&
-                  lastEventByAction[action.type] &&
-                  !isActive ? (
+                  {lastEventByAction[action.type] && !isActive ? (
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       Last:{" "}
                       {new Date(

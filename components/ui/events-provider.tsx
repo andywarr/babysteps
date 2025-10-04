@@ -357,6 +357,6 @@ function formatEventType(input: BabyEvent | EventType | TimerType): string {
     case "note":
       return "Note";
     case "misc":
-      return "Misc";
+      return "Event";
   }
 }
