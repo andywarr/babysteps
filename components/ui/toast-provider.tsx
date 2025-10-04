@@ -69,7 +69,7 @@ export function ToastProvider({ children }: PropsWithChildren) {
           >
             <div
               className={clsx(
-                "pointer-events-auto w-full max-w-sm rounded-lg border bg-white p-4 shadow-lg",
+                "pointer-events-auto w-sm rounded-lg border bg-white p-4 shadow-lg",
                 "dark:border-slate-700 dark:bg-slate-800",
                 toast.level === "success" &&
                   "border-green-200 bg-green-50 dark:border-green-600 dark:bg-green-900/40",
