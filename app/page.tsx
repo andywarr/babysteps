@@ -5,6 +5,10 @@ import { useEvents } from "@/components/ui/events-provider";
 import { QuickStats } from "@/components/ui/quick-stats";
 import { CircularProgress } from "@/components/ui/circular-progress";
 import { useInterval } from "@/lib/hooks/use-interval";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 type QuickActionType =
   | "bottle"
@@ -25,6 +29,28 @@ type VolumeTracker = {
 };
 
 const VOLUME_TRACKING_DURATION = 10000; // 10 seconds
+
+function formatLastEventTime(timestamp: string): string {
+  const eventDate = dayjs(timestamp);
+  const today = dayjs().startOf("day");
+  const diffDays = today.diff(eventDate.startOf("day"), "day");
+  const timeStr = eventDate.format("h:mm A");
+
+  if (diffDays === 0) {
+    return `Today ${timeStr}`;
+  } else if (diffDays === 1) {
+    return `Yesterday ${timeStr}`;
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago ${timeStr}`;
+  } else {
+    const weeks = Math.floor(diffDays / 7);
+    if (weeks === 1) {
+      return `1 week ago ${timeStr}`;
+    } else {
+      return `${weeks} weeks ago ${timeStr}`;
+    }
+  }
+}
 
 export default function HomePage() {
   const {
@@ -335,13 +361,7 @@ export default function HomePage() {
                   )}
                   {lastEventByAction[action.type] && !isActive ? (
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Last:{" "}
-                      {new Date(
-                        lastEventByAction[action.type]!
-                      ).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
+                      {formatLastEventTime(lastEventByAction[action.type]!)}
                     </p>
                   ) : null}
                 </div>
