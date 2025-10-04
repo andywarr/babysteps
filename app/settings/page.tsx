@@ -19,6 +19,11 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member" | "viewer">("member");
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [importStatus, setImportStatus] = useState<{
+    isProcessing: boolean;
+    message?: string;
+    level?: "success" | "error" | "info";
+  }>({ isProcessing: false });
 
   const submitProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -64,6 +69,138 @@ export default function SettingsPage() {
         title: "Error clearing data",
         description:
           "There was a problem clearing your data. Please try again.",
+        level: "error",
+      });
+    }
+  };
+
+  const handleImportFile = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset file input for future uploads
+    event.target.value = "";
+
+    setImportStatus({ isProcessing: true, message: "Processing file..." });
+
+    try {
+      const text = await file.text();
+      const lines = text.split("\n").filter((line) => line.trim());
+
+      if (lines.length < 2) {
+        throw new Error("File appears to be empty");
+      }
+
+      // Parse CSV header
+      const header = lines[0]
+        .split(",")
+        .map((col) => col.replace(/^"|"$/g, "").trim());
+
+      // Expected headers
+      const expectedHeaders = [
+        "id",
+        "type",
+        "timestamp",
+        "caregiverId",
+        "note",
+        "metadata",
+      ];
+      const headerValid = expectedHeaders.every((h) => header.includes(h));
+
+      if (!headerValid) {
+        throw new Error(
+          "Invalid file format. Expected columns: id, type, timestamp, caregiverId, note, metadata"
+        );
+      }
+
+      const events = [];
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Parse each row
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          // Parse CSV row handling quoted values
+          const row: string[] = [];
+          let current = "";
+          let inQuotes = false;
+
+          for (let j = 0; j < lines[i].length; j++) {
+            const char = lines[i][j];
+            const nextChar = lines[i][j + 1];
+
+            if (char === '"') {
+              if (inQuotes && nextChar === '"') {
+                // Escaped quote
+                current += '"';
+                j++; // Skip next quote
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (char === "," && !inQuotes) {
+              row.push(current);
+              current = "";
+            } else {
+              current += char;
+            }
+          }
+          row.push(current); // Add last field
+
+          if (row.length !== header.length) {
+            console.warn(
+              `Row ${i} has ${row.length} columns, expected ${header.length}`
+            );
+            errorCount++;
+            continue;
+          }
+
+          // Create object from row
+          const rowData: Record<string, string> = {};
+          header.forEach((col, idx) => {
+            rowData[col] = row[idx];
+          });
+
+          // Parse metadata JSON
+          const metadata = JSON.parse(rowData.metadata);
+          events.push(metadata);
+          successCount++;
+        } catch (err) {
+          console.warn(`Error parsing row ${i}:`, err);
+          errorCount++;
+        }
+      }
+
+      if (events.length === 0) {
+        throw new Error("No valid events found in file");
+      }
+
+      // Import events into database
+      await db.events.bulkPut(events);
+
+      setImportStatus({ isProcessing: false });
+      pushToast({
+        title: "Import complete",
+        description: `Successfully imported ${successCount} events${
+          errorCount > 0 ? `. ${errorCount} rows had errors.` : "."
+        }`,
+        level: "success",
+      });
+
+      // Reload the page to reflect new data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      console.error("Import error:", error);
+      setImportStatus({ isProcessing: false });
+      pushToast({
+        title: "Import failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "There was a problem importing your data.",
         level: "error",
       });
     }
@@ -144,6 +281,52 @@ export default function SettingsPage() {
             </button>
           </div>
         </form>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          Import Data
+        </h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          Upload a previously exported CSV file to restore your events. The file
+          should be in the same format as exported from the History page.
+        </p>
+
+        <div className="mt-4">
+          <label
+            htmlFor="import-file"
+            className={`inline-block cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold ${
+              importStatus.isProcessing
+                ? "bg-slate-300 text-slate-500 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400"
+                : "bg-brand-600 text-white hover:bg-brand-700"
+            }`}
+          >
+            {importStatus.isProcessing
+              ? "Processing..."
+              : "Choose file to import"}
+          </label>
+          <input
+            id="import-file"
+            type="file"
+            accept=".csv"
+            onChange={handleImportFile}
+            disabled={importStatus.isProcessing}
+            className="hidden"
+          />
+        </div>
+        {importStatus.message && (
+          <p
+            className={`mt-2 text-sm ${
+              importStatus.level === "error"
+                ? "text-red-600 dark:text-red-400"
+                : importStatus.level === "success"
+                ? "text-green-600 dark:text-green-400"
+                : "text-slate-600 dark:text-slate-300"
+            }`}
+          >
+            {importStatus.message}
+          </p>
+        )}
       </section>
 
       <section className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm dark:border-red-900/50 dark:bg-slate-900">
