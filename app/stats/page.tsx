@@ -118,7 +118,7 @@ export default function StatsPage() {
                 />
                 <Scatter
                   data={data.flattenedEvents}
-                  shape="circle"
+                  shape={<CustomEventShape />}
                   fill="#8884d8"
                 >
                   {data.flattenedEvents.map((event, index) => (
@@ -187,6 +187,44 @@ function CustomTooltip({ active, payload }: any) {
   return null;
 }
 
+// Custom shape component that renders duration as bars and volume as variable-sized dots
+function CustomEventShape(props: any) {
+  const { cx, cy, payload, fill } = props;
+  const { durationMinutes, amountOz, amountTsp } = payload;
+
+  // If event has a duration, render it as a horizontal bar
+  if (durationMinutes && durationMinutes > 0) {
+    // Convert duration to width in pixels (scale: 1 minute = 2 pixels, max 120px)
+    const barWidth = Math.min(durationMinutes * 2, 120);
+    const barHeight = 8;
+
+    return (
+      <rect
+        x={cx - barWidth / 2}
+        y={cy - barHeight / 2}
+        width={barWidth}
+        height={barHeight}
+        fill={fill}
+        opacity={0.8}
+        rx={4}
+      />
+    );
+  }
+
+  // For volume-based events, adjust dot size based on amount
+  let radius = 4; // default radius
+
+  if (amountOz && amountOz > 0) {
+    // Scale oz: 1-8 oz maps to 4-12 pixels radius
+    radius = Math.min(Math.max(amountOz + 3, 4), 12);
+  } else if (amountTsp && amountTsp > 0) {
+    // Scale tsp: 1-4 tsp maps to 4-10 pixels radius
+    radius = Math.min(Math.max(amountTsp + 3, 4), 10);
+  }
+
+  return <circle cx={cx} cy={cy} r={radius} fill={fill} opacity={0.8} />;
+}
+
 type StatProps = {
   label: string;
   value: string;
@@ -226,6 +264,9 @@ type ComputedStats = {
       day: string;
       time: string;
       details?: string;
+      durationMinutes?: number;
+      amountOz?: number;
+      amountTsp?: number;
     }>;
   }>;
   flattenedEvents: Array<{
@@ -234,6 +275,9 @@ type ComputedStats = {
     day: string;
     time: string;
     details?: string;
+    durationMinutes?: number;
+    amountOz?: number;
+    amountTsp?: number;
   }>;
 };
 
@@ -306,6 +350,10 @@ function buildStats(events: BabyEvent[]): ComputedStats {
           const hour = eventTime.hour() + eventTime.minute() / 60;
 
           let details = "";
+          let durationMinutes: number | undefined;
+          let amountOz: number | undefined;
+          let amountTsp: number | undefined;
+
           if (event.type === "feed") {
             const feedEvent = event as any;
             details = `${feedEvent.method ?? ""} ${
@@ -315,11 +363,20 @@ function buildStats(events: BabyEvent[]): ComputedStats {
                 ? `• ${feedEvent.amountOz} oz`
                 : ""
             }`.trim();
+            durationMinutes = feedEvent.durationMinutes;
+            amountOz = feedEvent.amountOz;
+            amountTsp = feedEvent.amountTsp;
           } else if (event.type === "sleep") {
             const sleepEvent = event as any;
             details = sleepEvent.durationMinutes
               ? `${sleepEvent.durationMinutes} min`
               : "";
+            durationMinutes = sleepEvent.durationMinutes;
+          } else if (event.type === "pump") {
+            const pumpEvent = event as any;
+            details = pumpEvent.amountOz ? `${pumpEvent.amountOz} oz` : "";
+            durationMinutes = pumpEvent.durationMinutes;
+            amountOz = pumpEvent.amountOz;
           } else if (event.type === "diaper") {
             const diaperEvent = event as any;
             details = diaperEvent.diaperType ?? "";
@@ -331,6 +388,9 @@ function buildStats(events: BabyEvent[]): ComputedStats {
             day: dayLabel,
             time: eventTime.format("h:mm A"),
             details: details || undefined,
+            durationMinutes,
+            amountOz,
+            amountTsp,
           };
         }),
       };
