@@ -30,26 +30,32 @@ type VolumeTracker = {
 
 const VOLUME_TRACKING_DURATION = 10000; // 10 seconds
 
-function formatLastEventTime(timestamp: string): string {
+function formatLastEventTime(timestamp: string): {
+  date: string;
+  time: string;
+} {
   const eventDate = dayjs(timestamp);
   const today = dayjs().startOf("day");
   const diffDays = today.diff(eventDate.startOf("day"), "day");
   const timeStr = eventDate.format("h:mm A");
 
+  let dateStr: string;
   if (diffDays === 0) {
-    return `Today ${timeStr}`;
+    dateStr = "Today";
   } else if (diffDays === 1) {
-    return `Yesterday ${timeStr}`;
+    dateStr = "Yesterday";
   } else if (diffDays < 7) {
-    return `${diffDays} days ago ${timeStr}`;
+    dateStr = `${diffDays} days ago`;
   } else {
     const weeks = Math.floor(diffDays / 7);
     if (weeks === 1) {
-      return `1 week ago ${timeStr}`;
+      dateStr = "1 week ago";
     } else {
-      return `${weeks} weeks ago ${timeStr}`;
+      dateStr = `${weeks} weeks ago`;
     }
   }
+
+  return { date: dateStr, time: timeStr };
 }
 
 export default function HomePage() {
@@ -360,8 +366,19 @@ export default function HomePage() {
                     </span>
                   )}
                   {lastEventByAction[action.type] && !isActive ? (
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {formatLastEventTime(lastEventByAction[action.type]!)}
+                    <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                      {(() => {
+                        const { date, time } = formatLastEventTime(
+                          lastEventByAction[action.type]!
+                        );
+                        return (
+                          <>
+                            {date}
+                            <br />
+                            {time}
+                          </>
+                        );
+                      })()}
                     </p>
                   ) : null}
                 </div>
