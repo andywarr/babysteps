@@ -57,8 +57,8 @@ export default function StatsPage() {
           />
           <Stat
             label="Sleep / 24h"
-            value={`${data.sleepMinutes24h} min`}
-            helper={`${data.sleepMinutes7d} min in 7d`}
+            value={formatMinutes(data.sleepMinutes24h)}
+            helper={`${formatMinutes(data.sleepMinutes7d)} in 7d`}
           />
         </dl>
       </section>
@@ -287,6 +287,20 @@ type ComputedStats = {
   }>;
 };
 
+function formatMinutes(minutes: number): string {
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+    }
+    return `${hours} ${
+      hours === 1 ? "hour" : "hours"
+    } and ${remainingMinutes} ${remainingMinutes === 1 ? "minute" : "minutes"}`;
+  }
+  return `${minutes} min`;
+}
+
 function buildStats(events: BabyEvent[]): ComputedStats {
   const now = dayjs();
   const lastFeed = events.find(
@@ -375,7 +389,7 @@ function buildStats(events: BabyEvent[]): ComputedStats {
           } else if (event.type === "sleep") {
             const sleepEvent = event as any;
             details = sleepEvent.durationMinutes
-              ? `${sleepEvent.durationMinutes} min`
+              ? formatMinutes(sleepEvent.durationMinutes)
               : "";
             durationMinutes = sleepEvent.durationMinutes;
           } else if (event.type === "pump") {
