@@ -189,24 +189,30 @@ function CustomTooltip({ active, payload }: any) {
 
 // Custom shape component that renders duration as bars and volume as variable-sized dots
 function CustomEventShape(props: any) {
-  const { cx, cy, payload, fill } = props;
+  const { cx, cy, payload, fill, xAxis } = props;
   const { durationMinutes, amountOz, amountTsp } = payload;
 
   // If event has a duration, render it as a horizontal bar
   if (durationMinutes && durationMinutes > 0) {
-    // Convert duration to width in pixels (scale: 1 minute = 2 pixels, max 120px)
-    const barWidth = Math.min(durationMinutes * 2, 120);
-    const barHeight = 8;
+    // Convert duration in minutes to hours for the x-axis scale
+    const durationHours = durationMinutes / 60;
+
+    // Calculate the width based on the chart's x-axis scale
+    // The x-axis goes from 0-24 hours, so we use that to calculate pixel width
+    const chartWidth = xAxis?.width || 600; // fallback width
+    const pixelsPerHour = chartWidth / 24;
+    const barWidth = Math.min(durationHours * pixelsPerHour, chartWidth * 0.3); // cap at 30% of chart width
+    const barHeight = 6;
 
     return (
       <rect
-        x={cx - barWidth / 2}
+        x={cx} // Start at the event time (not centered)
         y={cy - barHeight / 2}
         width={barWidth}
         height={barHeight}
         fill={fill}
-        opacity={0.8}
-        rx={4}
+        opacity={0.7}
+        rx={3}
       />
     );
   }
