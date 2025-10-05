@@ -7,6 +7,7 @@ import { Trash2 } from "lucide-react";
 
 import { useEvents } from "@/components/ui/events-provider";
 import type { BabyEvent, EventType } from "@/lib/types/events";
+import { formatDuration } from "@/lib/format-duration";
 
 const filters: { value: EventType | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -180,7 +181,7 @@ function formatEventLabel(event: BabyEvent): string {
         if (event.amountOz) {
           return `${method} • ${event.amountOz} oz`;
         } else if (event.durationMinutes) {
-          return `${method} • ${event.durationMinutes} min`;
+          return `${method} • ${formatDuration(event.durationMinutes)}`;
         } else {
           return method;
         }
@@ -190,21 +191,23 @@ function formatEventLabel(event: BabyEvent): string {
         if (event.amountTsp) {
           return `${method} • ${event.amountTsp} tsp`;
         } else if (event.durationMinutes) {
-          return `${method} • ${event.durationMinutes} min`;
+          return `${method} • ${formatDuration(event.durationMinutes)}`;
         } else {
           return method;
         }
       }
       // For breast feeds, show duration if available
       if (event.durationMinutes) {
-        return `${method} • ${event.durationMinutes} min`;
+        return `${method} • ${formatDuration(event.durationMinutes)}`;
       }
       return method;
     }
     case "diaper":
       return `${capitalize(event.diaperType)} diaper`;
     case "sleep":
-      return `Sleep • ${event.durationMinutes ?? "–"} min`;
+      return `Sleep • ${
+        event.durationMinutes ? formatDuration(event.durationMinutes) : "–"
+      }`;
     case "pump":
       return `Pump • ${event.amountOz ?? "–"} oz`;
     case "med":

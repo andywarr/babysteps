@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useEvents } from "@/components/ui/events-provider";
 import type { ActiveTimer } from "@/lib/types/events";
 import { useInterval } from "@/lib/hooks/use-interval";
+import { formatDuration } from "@/lib/format-duration";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -78,7 +79,7 @@ function TimerCard({ timer, now, onStop, onCancel }: TimerCardProps) {
             hour: "numeric",
             minute: "2-digit",
           })}{" "}
-          • {elapsedMinutes} min elapsed
+          • {formatDuration(elapsedMinutes)} elapsed
         </p>
       </div>
       <div className="mt-4 flex gap-2">
